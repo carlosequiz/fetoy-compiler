@@ -1,0 +1,1062 @@
+//CUP specification for a simple expression evaluator (no actions)
+
+import java_cup.runtime.*;
+import java.util.LinkedList;
+import java.util.Hashtable;
+import java.util.Vector;
+import java.io.*;
+
+parser code {:
+  public boolean syntaxErrors;
+  Lexer scanner;
+  SymTable tablaVar = new SymTable(null);
+  ASTInstBloque bloque;
+  ASTBloquePrincipal principal;
+  ProcTable promesas = new ProcTable();
+  ProcTable funciones = new ProcTable();
+  Registros reg = new Registros();
+  SymTable list_articles= new SymTable(null);
+  LinkedList pila = new LinkedList();
+  int SRegistros = 0;
+  int MaxSRegistros = 7;
+  int vg = 0;
+  info inf2;
+  int numParam = 0;
+
+  public parser(Lexer lex) {
+    super(lex);
+    scanner = lex;
+  }
+
+  public void report_error(String message, Object info) {
+    syntaxErrors = true;
+    System.out.print(message);
+    if (!(info instanceof Symbol)) return;
+      Symbol symbol = (Symbol) info;
+    if ( symbol.left < 0 || symbol.right < 0 ) return;
+      System.out.println(" en la linea "+symbol.left+", columna "+symbol.right);
+  }
+
+  FileOutputStream out = open();
+  
+  FileOutputStream open(){
+    try{
+      return new FileOutputStream("out.txt");
+    }
+    catch(Exception e){
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+:};
+
+/* Preliminaries to set up and use the scanner. */
+scan with {: return scanner.next_token(); :};
+
+
+
+/* Terminals (tokens returned by the scanner). */
+terminal PLUS;
+terminal MINUS;
+terminal TIMES;
+terminal DIVIDE;
+terminal MOD;
+terminal DIV;
+terminal UMINUS;
+terminal String TKENTERO;
+terminal String TKFLOAT;
+terminal String ID;
+terminal String ENTERO;
+terminal String FLOAT;
+terminal String CHAR; 
+terminal String STRING;
+terminal String BOOL;
+terminal PYC;
+terminal IGUAL;
+terminal COMA;
+terminal LPAREN;
+terminal RPAREN;
+terminal String  TKCHAR;
+terminal String TKSTRING;
+terminal TRUE;
+terminal FALSE;
+terminal LLLAVE;
+terminal RLLAVE;
+terminal MAYOR;
+terminal MENOR;
+terminal IGUALIGUAL;
+terminal DIFERENTE;
+terminal MAYORIGUAL;
+terminal MENORIGUAL;
+terminal OO;
+terminal O;
+terminal II;
+terminal I;
+terminal NEGACION;
+terminal SUB;
+terminal VOID;
+terminal REF;
+terminal MAIN;
+terminal IF;
+terminal ELSEIF;
+terminal ELSE;
+terminal WHILE;
+terminal BREAK;
+terminal FOR;
+terminal MASMAS;
+terminal MENOSMENOS;
+terminal MASIGUAL;
+terminal MENOSIGUAL;
+terminal FOREACH;
+terminal IN;
+terminal SWITCH;
+terminal CASE;
+terminal DOSPUNTOS;
+terminal RETURN;
+terminal LCORCHETE;
+terminal RCORCHETE;
+terminal STRUCT;
+terminal UNION;
+terminal TYPEDEF;
+terminal PUNTO;
+terminal PRINT;
+
+
+/* Non terminals */
+non terminal ASTExpr expr;
+non terminal String opruna;
+non terminal inicial;
+non terminal LinkedList declaracion;
+non terminal ASTInst stmt;
+non terminal LinkedList stmts;
+non terminal ASTTipo tipo;
+non terminal ASTTipo tipobasicos;
+non terminal ASTTipo tipocompuesto;
+non terminal LinkedList multdeclar;
+non terminal declaracion multdeclar1;
+non terminal ASTInstAsig asignacion;
+non terminal ASTInstAsig asignacionRara;
+non terminal bloque;
+non terminal bloqueb;
+non terminal declaraciones;
+non terminal procedimiento;
+non terminal LinkedList param;
+non terminal ASTTipo tipoP;
+non terminal LinkedList referencia;
+non terminal LinkedList referencias;
+non terminal principal;
+non terminal promesas;
+non terminal seleccion;
+non terminal LinkedList elseif;
+non terminal repeticion;
+non terminal rep1;
+non terminal rep2;
+non terminal rep3;
+non terminal bloqueR;
+non terminal stmtsR;
+non terminal stmtsRS;
+non terminal LinkedList dec;
+non terminal ASTInstAsig asig;
+non terminal switche;
+non terminal LinkedList case;
+non terminal stmtsb;
+non terminal stmtb;
+non terminal LinkedList iniarray;
+non terminal llamadafuncion;
+non terminal LinkedList parame;
+non terminal LinkedList params;
+non terminal ASTTipoStruct struct_identifier;
+non terminal ASTTipoStruct lista_estructura;
+non terminal ASTExprLValue lvalue;
+non terminal ASTExprStructElem atributo_struct; 
+non terminal ASTExprArrayElem elem_array; 
+non terminal deftipo; 
+non terminal structUnion union; 
+non terminal structUnion lista_union; 
+non terminal LinkedList parametros;
+non terminal ASTTipoStruct st;
+non terminal ASTInst imprime;
+
+/* Precedences */
+precedence left IGUALIGUAL, DIFERENTE;
+precedence right MAYORIGUAL, MENORIGUAL;
+precedence left OO, O, I, II;
+precedence left MAYOR, MENOR;
+precedence right IGUAL;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE, MOD, DIV;
+precedence left UMINUS, NEGACION;
+precedence left PUNTO;
+
+
+start with inicial;
+
+/* The grammar */
+
+inicial ::=  declaraciones promesas LLLAVE declaraciones {:parser.principal = new ASTBloquePrincipal(parser.tablaVar); :} procedimiento principal procedimiento RLLAVE 
+            {:if(!parser.funciones.equals(parser.promesas))
+                throw new PromesaNoDeclaradaException(parser.scanner.linea(), parser.scanner.columna());
+              //System.out.println(parser.principal);
+              parser.principal.toCode(0,0);
+            :}
+;
+
+promesas ::= promesas SUB tipoP:v1 ID:v2 LPAREN params:v3 RPAREN PYC {: parser.promesas.add(v2, new Proc(v2,v1,v3));:}
+| 
+;
+
+params ::= referencias:v1 {: RESULT = v1;:}
+| {: RESULT = new LinkedList(); :}
+;
+
+referencias ::= referencias:v1 COMA tipo:v2 
+    {:
+    RESULT = v1 ; 
+    v1.add(v2); 
+    :}
+|  referencias:v1 COMA REF tipo:v2  
+{:
+    RESULT = v1 ; 
+    v1.add(v2); 
+:}
+| tipo:v1 {:
+                    RESULT = new LinkedList(); 
+                    RESULT.add(v1); 
+                :}
+| REF tipo:v1 {: 
+                        RESULT = new LinkedList(); 
+                        RESULT.add(v1); 
+                    :}
+;
+
+declaraciones ::= declaraciones declaracion PYC
+|  
+;
+
+procedimiento ::= procedimiento:v1 SUB tipoP:v2 ID:v3 {: parser.tablaVar= new SymTable(parser.tablaVar); :} LPAREN param:v4 RPAREN bloqueb:v5 
+                                                      {:
+                                                        Proc a = new Proc(v3,v2,v4, parser.bloque);
+                                                        if (parser.promesas.equals(v3,a)){
+                                                          parser.principal.add(v3,a);
+                                                          parser.funciones.add(v3,a);
+                                                        } else
+                                                          throw new FuncionNoDeclaradaException(v3, parser.scanner.linea(), parser.scanner.columna());
+                                                        parser.bloque = parser.bloque.padre;
+                                                      :} 
+|
+;
+
+tipoP ::= tipo:v1 {:RESULT = v1;:}
+| VOID {:RESULT = new ASTTipoVoid(); :}
+;
+
+param ::= referencia:v1 {: RESULT = v1;:}
+| {: RESULT = new LinkedList();:}
+
+;
+
+referencia ::= referencia:v1 COMA tipo:v2 ID:v3
+    {:
+    if (parser.tablaVar.isHere(v3))
+      throw new YaExisteException(v3,parser.scanner.linea(), parser.scanner.columna());
+    parser.tablaVar.put(v3,new info(v2, parser.numParam++, "valor"));
+    RESULT = v1 ; 
+    v1.add(v2); 
+    :}
+|  referencia:v1 COMA REF tipo:v2 ID:v3 
+{:
+                      
+                    if (parser.tablaVar.isHere(v3))
+                      throw new YaExisteException(v3,parser.scanner.linea(), parser.scanner.columna());
+                    parser.tablaVar.put(v3,new info (v2, parser.numParam++, "ref"));
+
+    RESULT = v1 ; 
+    v1.add(v2); 
+:}
+| tipo:v1 ID:v2 {:
+                    parser.numParam = 0; 
+                    if (parser.tablaVar.isHere(v2))
+                      throw new YaExisteException(v2,parser.scanner.linea(), parser.scanner.columna());
+                    parser.tablaVar.put(v2,new info(v1, parser.numParam++, "valor"));
+                    RESULT = new LinkedList(); 
+                    RESULT.add(v1); 
+                :}
+| REF tipo:v1 ID:v2 {:
+                    parser.numParam = 0; 
+                    if (parser.tablaVar.isHere(v2))
+                      throw new YaExisteException(v2,parser.scanner.linea(), parser.scanner.columna());
+                    parser.tablaVar.put(v2,new info(v1, parser.numParam++, "ref"));
+                    RESULT = new LinkedList(); 
+                    RESULT.add(v1); 
+                    :}
+;
+
+principal ::= SUB MAIN {: parser.tablaVar= new SymTable(parser.tablaVar);:} bloque {:parser.principal.addMain(parser.bloque); :}
+;
+
+bloque ::=LLLAVE {: parser.bloque = new ASTInstBloque(parser.bloque); 
+                    parser.tablaVar = new SymTable(parser.tablaVar);
+                :} stmts RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
+                                    parser.tablaVar = parser.tablaVar.prev ; 
+                :}
+;
+
+bloqueb ::=LLLAVE {: parser.bloque = new ASTInstBloque(parser.bloque); 
+                  :} stmtsb RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
+                                       parser.tablaVar = parser.tablaVar.prev ; 
+                                    :}
+;
+
+bloqueR ::=LLLAVE stmtsR RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
+                                    parser.tablaVar = parser.tablaVar.prev ;  
+                                 :}
+;
+
+// ***************************************************** DECLARACIONES ****************************************************
+
+declaracion ::= tipo:v1 multdeclar:v2 
+                            {:RESULT = new LinkedList();
+                              for(int i =0; i < v2.size();i++){
+                                if (parser.tablaVar.isHere(((declaracion) v2.get(i)).getId()))
+                                  throw new YaExisteException(((declaracion) v2.get(i)).getId(),parser.scanner.linea(),parser.scanner.columna());
+                                else{
+                                    info inf = new info(v1);
+                                  parser.tablaVar.put(((declaracion) v2.get(i)).getId(),inf );
+                                  declaracion dec = (declaracion) v2.get(i);
+                                  if (dec.tieneArbol()){
+                                    dec.getArbol().asigna(v1);
+                                    dec.getArbol().lva(inf);
+                                    if(dec.getArbol().checkAsig(v1))
+                                      parser.bloque.add(dec.getArbol());
+                                    else{ 
+                                      throw new TiposIncompatiblesException(dec.getId(), parser.scanner.linea(), parser.scanner.columna());
+                                    }
+                                  }
+                                }
+                              }
+                            :}
+;
+
+multdeclar ::= multdeclar:v1 COMA multdeclar1:v2 {: RESULT = v1; RESULT.add(v2); :}
+| multdeclar1:v1 {: LinkedList x = new LinkedList() ; x.add(v1); RESULT = x;:}
+;
+
+multdeclar1 ::= ID:v1 {:RESULT = new declaracion(v1,null,false) ;:}
+| ID:v1 IGUAL expr:v2 {: RESULT = new declaracion(v1, new ASTInstAsigExp(new ASTExprId(v1, null),v2), true); :}
+| ID:v1 IGUAL TKCHAR:v2 {:RESULT = new declaracion(v1,new ASTInstAsigExp(new ASTExprId(v1, null),new ASTExprCharCtte(v2.toCharArray()[0])),true); :}
+;
+
+tipo ::= tipobasicos:v1 {: RESULT = v1;:}
+| tipocompuesto:v1 {: RESULT = v1;:}
+;
+
+tipocompuesto ::= tipo:v1 LCORCHETE expr:v2 RCORCHETE 
+              {:
+                if (!v2.getTip().isNumber())
+                  throw new UsoIndebidoException(parser.scanner.linea(), parser.scanner.columna());
+                RESULT = new ASTTipoArray(v1,(ASTExprArit) v2);                                
+              :}
+|  struct_identifier:v1 {: RESULT = v1;:} 
+|  LPAREN ID:v1 RPAREN     {:
+
+               if (!parser.tablaVar.exist(v1))
+                 throw new TipoNoDeclaradoException(v1,parser.scanner.linea(),parser.scanner.columna());
+               else {
+                 ASTTipo tipo = parser.tablaVar.find(v1).obj;
+                 if (!tipo.isTipo())
+                   throw new TipoNoDeclaradoException(v1,parser.scanner.linea(),parser.scanner.columna());
+                 
+                 RESULT = ((ASTTipoTipo) tipo).getRealTipo();
+               }
+              :}
+;
+
+struct_identifier ::= STRUCT LLLAVE st:v1 {:  RESULT = v1;:}
+;
+
+st ::= lista_estructura:v1 COMA union:v2 RLLAVE 
+                  {: 
+                    RESULT = v1;
+                    v1.union = v2;
+                    if (!v1.checkAll()) 
+                      throw new UnionException(parser.scanner.linea(), parser.scanner.columna());
+                    //Se agrega el campo discriminante
+                    v1.agregar(new info(v2.tipo), v2.discriminante);
+                    v1.setCamposUnion();
+
+                  :}
+| lista_estructura:v1 RLLAVE
+                  {: 
+                    RESULT = v1;
+                  :}
+| union:v1 RLLAVE 
+  {:
+    RESULT = new ASTTipoStruct(v1);
+  :}
+;
+ 
+lista_estructura ::= 
+                  lista_estructura:v1 COMA tipo:v2 ID:v3 
+                  {:  RESULT = v1; 
+                      if (!v1.st.containsKey(v3)){
+                        v1.agregar(new info(v2),v3);
+                      }else
+                        throw new MismoNombreStructException(parser.scanner.linea(), parser.scanner.columna());
+                  :}
+| tipo:v1 ID:v2 
+                {: 
+                  RESULT = new ASTTipoStruct(new info(v1),v2);
+                :}
+;
+
+union ::= UNION tipo:v1 ID:v2 LLLAVE lista_union:v3 RLLAVE 
+          {:
+              //Actualizando el discriminante 
+              v3.discriminante = v2;   
+               
+             //Chequeo que no hayan usado el discrimante dentro de ningun case.
+             if(v3.existAll(v2))
+               throw new MismoNombreStructException(parser.scanner.linea(), parser.scanner.columna());
+             //Chequeo de que las expresiones en el case son iguales al discriminante
+             if (!v1.equals(v3.tipo))
+               throw new SwitchException(parser.scanner.linea(), parser.scanner.columna());
+             
+             RESULT = v3; 
+          :}
+;
+
+lista_union ::= lista_union:v1 expr:v2 DOSPUNTOS LLLAVE lista_estructura:v3 RLLAVE 
+    {:if (!v1.agregar(v2, v3.st))
+        throw new Exception("Se repiten los id");
+      RESULT = v1;
+    :}
+| expr:v1 DOSPUNTOS LLLAVE lista_estructura:v2 RLLAVE {: RESULT = new structUnion(v1, v2.st, v2.tam); :}
+;
+
+tipobasicos ::= ENTERO {: RESULT = new ASTTipoInt(); :}
+| STRING {: RESULT = new ASTTipoString(); :}
+| FLOAT {: RESULT = new ASTTipoFloat(); :}
+| BOOL {: RESULT = new ASTTipoBool(); :}
+| CHAR {: RESULT = new ASTTipoChar(); :}
+;
+
+stmts ::= stmts:v1 stmt:v2 PYC  {: RESULT = v1 ; if (v2 != null) { RESULT.add(v2);}   :}
+| stmt:v1 PYC 
+                                {:RESULT = new LinkedList() ;
+                                  if (v1 != null){
+                                    RESULT.add(v1);
+                                  }  
+                                :}
+;
+
+stmtsb ::= stmtsb stmtb PYC
+| stmtb PYC
+;
+
+//POR QUE SOLO RETURN??
+stmtb ::= RETURN
+| RETURN expr:v1 {: 
+                    ASTInstReturn ir = new ASTInstReturn(v1);
+                    ir.retParam = parser.tablaVar.retParam();
+                    System.out.println(parser.tablaVar.tamParam());
+                    parser.bloque.add(ir); 
+                    //RESULT = ir;
+                  :} 
+| RETURN CHAR:v1 {: 
+                    ASTInstReturn ir = new ASTInstReturn(new ASTExprCharCtte(v1.toCharArray()[0]));
+                    parser.bloque.add(ir); 
+                  :}
+| stmt
+;
+
+stmt ::= asignacion             
+| asignacionRara
+| declaracion
+| seleccion
+| repeticion
+| switche
+| llamadafuncion:v1 {:    parser.bloque.add((ASTInst) v1); :}
+| deftipo
+| imprime
+;
+
+imprime ::= PRINT LPAREN expr:v1 RPAREN {:
+                                                parser.bloque.add(new ASTInstImprime(v1)); 
+                                              
+                                        :}
+;
+
+deftipo ::= TYPEDEF tipo:v1 ID:v2 {:
+                                    if (parser.tablaVar.exist(v2))
+                                      throw new YaExisteException(v2,parser.scanner.linea(),parser.scanner.columna());
+                                    else {
+                                      parser.tablaVar.put(v2,new info(new ASTTipoTipo(v1)));
+                                    }
+                                  :}
+;
+
+llamadafuncion ::= ID:v1 LPAREN parame:v2 RPAREN 
+                                                {:if (!parser.promesas.isHere(v1))
+                                                    throw new FuncionNoDeclaradaException(v1,parser.scanner.linea(),parser.scanner.columna()); 
+                                                  String ret = parser.funciones.getRet(v1).toString(); 
+                                                  Proc procInfo = parser.funciones.get(v1);                                                 
+                                                  ASTInstFuncion f1 = new ASTInstFuncion(v2, procInfo);
+                                                  if (procInfo.retType.isVoid()){
+                                                    RESULT = f1;
+                                                  } else
+                                                    RESULT = new ASTExprFun(procInfo.retType, f1); 
+                                                    System.out.println(procInfo.retType);
+                                                     
+                                                  //Por que si es void no se agrega la llamada a función?
+                                                  //if (!ret.equals("VOID"))
+                                                :} 
+;
+
+parame ::= parame:v1 COMA expr:v2 {: RESULT = v1; RESULT.add(v2);:}
+| parame:v1 COMA TKCHAR:v2 {:RESULT = v1; RESULT.add(v2); :}
+| expr:v1 {: RESULT = new LinkedList(); RESULT.add(v1); :}
+| TKCHAR:v1 {:RESULT = new LinkedList(); RESULT.add(v1); :}
+|
+;
+
+ // ********************************************************** SWITCH ***************************************************************
+
+switche ::= SWITCH LPAREN expr:v1 RPAREN LLLAVE case:v2 RLLAVE {:  LinkedList casos = new LinkedList(); 
+                                                                  LinkedList bloques = new LinkedList();
+                                                                  for (int i = 0; i < v2.size(); i++){
+                                                                    if (i%2 == 0){
+                                                                      ASTExpr caseexp = (ASTExpr)v2.get(i);
+                                                                      if (!caseexp.getTip().isCompatible(v1.getTip()) )
+                                                                        throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                                                      
+                                                                      //Casteo Implicito
+                                                                      if (v1.getTip().isFloat() && caseexp.getTip().isEntero())
+                                                                        caseexp = new ASTExprCast(caseexp, new ASTTipoFloat());
+
+                                                                      casos.add(caseexp);
+                                                                    } else
+                                                                      bloques.add(v2.get(i));
+                                                                  }  
+                                                                  parser.bloque.add(new ASTInstSwitch(v1,casos,bloques));
+                                                                :}
+;
+
+case ::= case:v1 CASE expr:v2 DOSPUNTOS bloque {:  RESULT = v1; 
+                                                  if (v1 == null)
+                                                    System.out.println("En el case, la expr es nula");
+                                                  if (v2.Id())
+                                                    throw new NoIdException(parser.scanner.linea(),parser.scanner.columna());
+                                                  RESULT.add(v2);
+                                                  RESULT.add(parser.bloque);
+                                                  parser.bloque = parser.bloque.padre;
+                                                :}
+| CASE expr:v1 DOSPUNTOS bloque {:RESULT = new LinkedList();
+                                  if (v1 == null)
+                                    System.out.println("En el case, la expr es nula");
+                                  if (v1.Id())
+                                    throw new NoIdException(parser.scanner.linea(), parser.scanner.columna());
+                                  RESULT.add(v1);
+                                  RESULT.add(parser.bloque);
+                                  parser.bloque = parser.bloque.padre;
+                                :}
+;
+
+  // ***************************************************** ITERACIONES *******************************************************************
+
+repeticion ::= rep1
+| rep2
+| rep3
+;
+
+rep1 ::= WHILE expr:v1 {:
+                          parser.tablaVar = new SymTable(parser.tablaVar);
+                          parser.bloque = new ASTInstBloque(parser.bloque); 
+                        :} bloqueR
+                            {:if (!v1.getTip().isBool())
+                                throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                              parser.bloque.padre.add(new ASTInstWhile(v1,parser.bloque));
+                              parser.bloque = parser.bloque.padre;
+                            :}
+;
+
+rep2 ::= FOR LPAREN {:
+                      parser.tablaVar = new SymTable(parser.tablaVar); 
+                      parser.bloque = new ASTInstBloque(parser.bloque); 
+                      :}
+                    dec:v1 PYC expr:v2 PYC asig:v3 RPAREN bloqueR 
+                                {:if (!v2.getTip().isBool())
+                                    throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                  if (v1 != null)
+                                    parser.bloque.padre.add(new ASTInstFor(((declaracion) v1.get(1)).getArbol(),v2,v3,parser.bloque));
+                                  else
+                                    parser.bloque.padre.add(new ASTInstFor(null,v2,v3,parser.bloque));
+                                  parser.bloque = parser.bloque.padre;
+                                :}
+;
+
+rep3 ::= FOREACH {:
+                   parser.tablaVar = new SymTable(parser.tablaVar);:} LPAREN ID:v1 IN ID:v2 RPAREN {: 
+                    if (!parser.tablaVar.exist(v2))
+                      throw new VariableNoDeclaradaException(v1,parser.scanner.linea(), parser.scanner.columna());
+                    info infarray = parser.tablaVar.find(v2);
+                    ASTTipo tipo = infarray.obj;
+                    if (!tipo.isArray())
+                      throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                    
+                    // Agrego el elemento creado
+                    info inf =new info(((ASTTipoArray) tipo).subclass);
+                    parser.inf2 = inf;
+                    parser.tablaVar.put(v1, inf);
+                    parser.bloque = new ASTInstBloque(parser.bloque); 
+                  :} bloqueR {:
+                    parser.bloque.padre.add(new ASTInstForeach( parser.inf2,parser.tablaVar.find(v2),parser.bloque));
+                    parser.bloque = parser.bloque.padre;
+                  :}
+;
+
+ // *********************************** DECLARACIONES DENTRO DE ITERACIONES ***********************************************************
+
+dec ::= tipo:v1 ID:v2 {:
+                        parser.tablaVar.put(v2,new info(v1)); 
+                        RESULT = new LinkedList() ; 
+                        RESULT.add(v1); 
+                        RESULT.add(new declaracion(v2,null,false)); 
+                      :}
+| tipo:v1 ID:v2 IGUAL {:
+                        parser.tablaVar.put(v2,new info(v1));
+                      :} expr:v3 
+                      {:
+                        RESULT = new LinkedList(); 
+                        RESULT.add(v1);
+                        ASTInstAsig ret = new ASTInstAsigExp(new ASTExprId(v2, parser.tablaVar.find(v2)), v3);
+                        if (!ret.checkAsig(v1))
+                          throw new TiposIncompatiblesException(v2, parser.scanner.linea(),parser.scanner.columna());
+                        RESULT.add(new declaracion(v2,ret,true));
+                      :}
+|
+;
+
+asig ::= lvalue:v1 IGUAL expr:v2 {:
+                                    ASTInstAsig ret = new ASTInstAsigExp(v1, v2);
+                                    if (!ret.checkAsig(v1.getTip()))
+                                      throw new TiposIncompatiblesException(v2.toString(), parser.scanner.linea(),parser.scanner.columna());
+                                    RESULT = ret;
+                                  :}
+| lvalue:v1 IGUAL TKCHAR:v2 {:
+                              if (v1.getTip().isChar())
+                                RESULT = new ASTInstAsigExp(v1,new ASTExprCharCtte(v2.toCharArray()[0])); 
+                                else
+                                  throw new TiposIncompatiblesException(v1.toString(),parser.scanner.linea(),parser.scanner.columna());
+                  :}
+| lvalue:v1 MASMAS 
+       {:
+                                  if (v1.getTip().isEntero())
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("+",v1,new ASTExprAritCtteInt(1)));
+                                  else if (v1.getTip().isFloat())
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("+",v1,new ASTExprAritCtteFloat((float) 1.0)));
+                                  else
+                                    throw new TiposIncompatiblesException(v1.toString(), parser.scanner.linea(),parser.scanner.columna());
+                                :}
+| lvalue:v1 MASIGUAL expr:v2  
+                                {:
+                                  if (v1.getTip().isNumber() && v2.getTip().isNumber())
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("+",v1, v2));
+                                  else if (v1.getTip().isString() && v2.getTip().isString())
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprStringBin(new ASTExprId(v1.getId(),v1.getInfo()),(ASTExprString) v2));
+                                  else
+                                    throw new TiposIncompatiblesException(v1.toString(),parser.scanner.linea(),parser.scanner.columna());
+                                :}
+| lvalue:v1 MENOSIGUAL expr:v2  {:  
+
+                                  if (v1.getTip().isNumber() && v2.getTip().isNumber())
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("-",v1, v2));
+                                  else
+                                    throw new TiposIncompatiblesException(v1.toString(),parser.scanner.linea(),parser.scanner.columna());
+                                :}  
+| lvalue:v1 MENOSMENOS          {:
+                                  if (v1.getTip().isEntero())
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("-",v1,new ASTExprAritCtteInt(1)));
+                                  else if (v1.getTip().isFloat())
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("-",v1,new ASTExprAritCtteFloat((float) 1.0)));
+                                  else
+                                    throw new TiposIncompatiblesException(v1.toString(),parser.scanner.linea(),parser.scanner.columna());
+
+                                 :}
+|
+;
+
+stmtsR ::= stmtsR stmtsRS PYC 
+| stmtsRS PYC
+;
+
+stmtsRS ::= stmt
+| BREAK PYC {: parser.bloque.add(new ASTInstBreak()); :}
+;
+
+  // ************************************************* IF *********************************8**************************
+
+seleccion ::= IF expr:v1 bloque:v2 elseif:v3 
+{:if (!v1.getTip().isBool())
+      throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+    parser.bloque.padre.add(new ASTInstIf(parser.bloque,v1,v3));
+    parser.bloque = parser.bloque.padre;
+:}
+;
+ 
+elseif ::= ELSEIF expr:v1 bloque elseif:v3 {:if (!v1.getTip().isBool())
+                                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                                  v3.addFirst(new ASTInstElseIf(v1,parser.bloque)); 
+                                                  RESULT = v3; 
+                                                  parser.bloque = parser.bloque.padre; :}
+| ELSE bloque {: RESULT = new LinkedList(); RESULT.add(new ASTInstElse(parser.bloque)); parser.bloque = parser.bloque.padre; :}
+| {:RESULT = new LinkedList(); :}
+;
+
+// ******************************************* ASIGNACIONES **********************************************************
+
+asignacion ::= lvalue:v1 IGUAL expr:v2 {:
+                                      ASTInstAsig a = new ASTInstAsigExp(v1,v2);
+                                      a.asigna(v1.getTip());
+                                      if (a.checkAsig(v1.getTip())){
+                                        RESULT = a;
+                                        parser.bloque.add(RESULT);  
+                                      }
+                                      else 
+                                        throw new TiposIncompatiblesException(v1.toString(),parser.scanner.linea(),parser.scanner.columna());
+                                      :}
+| lvalue:v1 IGUAL TKCHAR:v2 {:
+                              ASTInstAsig a = new ASTInstAsigExp(v1,new ASTExprCharCtte(v2.toCharArray()[0]));
+                              if (a.checkAsig(v1.getTip())){
+                                RESULT = a;
+                                parser.bloque.add(RESULT);  
+                              }
+                              else
+                              throw new TiposIncompatiblesException(v1.toString(),parser.scanner.linea(),parser.scanner.columna());
+                            :}
+;
+
+lvalue ::= ID:v1  {: 
+  if (!parser.tablaVar.exist(v1))
+    throw new VariableNoDeclaradaException(v1,parser.scanner.linea(), parser.scanner.columna());
+  else 
+    RESULT = new ASTExprId(v1, parser.tablaVar.find(v1));
+ :}
+| elem_array:v1 {: RESULT = v1; :}
+| atributo_struct:v1   {: RESULT = v1; :}
+;
+
+ // ****************************************** EXPRESIONES **************************************************************
+
+expr ::= expr:v1 PLUS expr:v3
+ 
+                             {:if (!((v1.getTip().isNumber() && v3.getTip().isNumber()) || (v1.getTip().isString() && v3.getTip().isString()))) 
+                                 throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                               if (v1.getTip().isNumber()) 
+                                  RESULT = new ASTExprAritBin("+", v1, v3);
+                               else if (v1.getTip().isString())
+                                  RESULT = new ASTExprStringBin((ASTExprString) v1,(ASTExprString) v3);
+
+                             :}
+
+|  expr:v1 TIMES expr:v3 
+
+                             {: if (!v1.getTip().isNumber() || !v3.getTip().isNumber())
+                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                RESULT = new ASTExprAritBin("*",  v1,v3) ;
+                             :} 
+
+|  expr:v1 MINUS expr:v3
+
+                            {:if (!v1.getTip().isNumber() || !v3.getTip().isNumber()) 
+                                throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                              RESULT = new ASTExprAritBin("-",v1,v3);
+                            :}
+
+|  expr:v1 DIVIDE expr:v3
+
+                            {:if (!v1.getTip().isNumber() || !v3.getTip().isNumber()) 
+                                      throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                              RESULT = new ASTExprAritBin("/",v1,v3); 
+                            :}
+
+|  expr:v1 MOD expr:v3 
+
+                            {:if (!v1.getTip().isNumber() || !v3.getTip().isNumber())
+                                      throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                              RESULT = new ASTExprAritBin("%",v1,v3) ;
+                            :}
+
+|  expr:v1 DIV expr:v3
+
+                            {:if (!v1.getTip().isNumber() || !v3.getTip().isNumber())
+                                      throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                              RESULT = new ASTExprAritBin("div",v1,v3); 
+                            :}
+
+|  expr:v1 MAYOR expr:v3
+
+                            {:if (!v1.getTip().isNumber() || !v3.getTip().isNumber())
+                                      throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                              RESULT = new ASTExprBoolBinExpr("MAYOR",v1,v3);
+                            :}
+
+|  expr:v1 MENOR expr:v3
+
+                            {:if (!v1.getTip().isNumber() || !v3.getTip().isNumber())
+                                      throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                              RESULT = new ASTExprBoolBinExpr("MENOR", v1, v3);
+                            :}
+
+|  expr:v1 MAYORIGUAL expr:v3 
+
+                              {:if (!v1.getTip().isNumber() || !v3.getTip().isNumber())
+                                        throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                RESULT = new ASTExprBoolBinExpr("MAYORIGUAL",  v1, v3);
+                              :}
+
+|  expr:v1 MENORIGUAL expr:v3 
+
+                              {:if (!v1.getTip().isNumber() || !v3.getTip().isNumber())
+                                        throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                RESULT = new ASTExprBoolBinExpr("MENORIGUAL",  v1, v3);
+                              :}
+
+|  expr:v1 IGUALIGUAL expr:v3 
+
+                              {:if (!(v1.getTip().equals(v3.getTip())))
+                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                if (v1.getTip().isNumber())
+                                  RESULT = new ASTExprBoolBinExpr("IGUALIGUAL",  v1, v3);
+                                else if (v1.getTip().isBool())
+                                  RESULT = new ASTExprBoolBinBool("IGUALIGUAL",v1,v3);
+                                else if (v1.getTip().isChar())
+                                  RESULT = new ASTExprBoolBinChar(v1,v3);
+                                else if (v1.getTip().isString())
+                                  RESULT = new ASTExprBoolBinString(v1,v3);
+                                else if (v1.getTip().isStruct())
+                                  RESULT = new ASTExprBoolBinExpr("IGUALIGUAL", v1,v3);
+                              :}
+
+|  expr:v1 DIFERENTE expr:v3  
+
+                              {:if (!v1.getTip().equals(v3.getTip()))
+                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                if (v1.getTip().isNumber())
+                                  RESULT = new ASTExprBoolBinExpr("DIFERENTE",  v1, v3);
+                                else if (v1.getTip().isBool())
+                                  RESULT = new ASTExprBoolBinBool("DIFERENTE",v1,v3);
+                                else if (v1.getTip().isChar())
+                                  RESULT = new ASTExprBoolUna(new ASTExprBoolBinChar(v1,v3));
+                                else if (v1.getTip().isString())
+                                  RESULT = new ASTExprBoolUna(new ASTExprBoolBinString(v1,v3));
+                              :}
+
+|  expr:v1 II expr:v3
+
+                              {:if (!v1.getTip().isBool() || !v3.getTip().isBool())
+                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                RESULT = new ASTExprBoolBinBool("II", v1, v3);
+                              :}
+
+|  expr:v1 I expr:v3
+
+                              {:if (!v1.getTip().isBool() || !v3.getTip().isBool())
+                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                RESULT = new ASTExprBoolBinBool("I", v1, v3);
+                              :}
+
+|  expr:v1 OO expr:v3         
+
+                              {:if (!v1.getTip().isBool() || !v3.getTip().isBool())
+                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                RESULT = new ASTExprBoolBinBool("OO", v1, v3);
+                              :}
+
+|  expr:v1 O expr:v3          
+
+                              {:if (!v1.getTip().isBool() || !v3.getTip().isBool())
+                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                RESULT = new ASTExprBoolBinBool("O", v1, v3);
+                              :}
+
+| opruna:v1 expr:v2 
+
+                              {:if (v1.equals("MINUS")){
+                                  if (!v2.getTip().isNumber())
+                                        throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                  RESULT = new ASTExprAritUna("-", v2) ;
+                                }
+                                else if (v1.equals("NEGACION")){
+                                  if (!v2.getTip().isBool())
+                                        throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                  RESULT = new ASTExprBoolUna(v2); 
+                                }
+                              :} 
+  %prec UMINUS 
+
+| llamadafuncion:v1 {: RESULT = (ASTExpr) v1; :}
+
+| LPAREN expr:v1 RPAREN {: RESULT = v1; :} 
+
+
+| TKENTERO:v1 {:RESULT = new ASTExprAritCtteInt( Integer.parseInt((String) v1));
+              :}
+
+| TKFLOAT:v1 {: RESULT = new ASTExprAritCtteFloat( Float.valueOf(v1).floatValue()) ;:}
+
+| TKSTRING:v1 {: RESULT = new ASTExprStringCtte(v1);:}
+
+| TRUE  {:RESULT = new ASTExprBoolCtte(true); :}
+
+| FALSE {: RESULT = new ASTExprBoolCtte(false);  :}
+
+|  LCORCHETE iniarray:v1 RCORCHETE  {: 
+                                        ASTExprArrayCtte c = new ASTExprArrayCtte(v1);
+                                        RESULT = c; 
+                                    :} 
+
+| lvalue:v1 {: RESULT = v1 ;:}
+
+/*| ID LPAREN parametros  RPAREN  {:
+                                    
+                                :}
+;
+
+parametros ::= parametros COMA expr
+| expr
+|*/
+;
+
+elem_array ::=  elem_array:v1 LCORCHETE expr:v2 RCORCHETE {:
+                                        if (!v2.getTip().isNumber())
+                                          throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                        if (!v1.lvalue.getTip().isArray())
+                                          throw new Exception("Ya no es un arreglo!");
+                                        RESULT = new ASTExprArrayElem(v1,((ASTTipoArray) v1.getTip()).subclass, v2);
+                                                          :}
+|  ID:v1 LCORCHETE expr:v2 RCORCHETE 
+                                    {: 
+                                      if (!parser.tablaVar.exist(v1))
+                                        throw new VariableNoDeclaradaException(v1,parser.scanner.linea(),parser.scanner.columna());
+                                      else {
+                                        ASTTipo tipo = parser.tablaVar.find(v1).obj;
+                                        if (!tipo.isArray())
+                                          throw new VariableNoDeclaradaException(v1,parser.scanner.linea(),parser.scanner.columna());
+                                        
+                                        if (!v2.getTip().isNumber())
+                                          throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                        
+                                        RESULT = new ASTExprArrayElem( new ASTExprId(v1, parser.tablaVar.find(v1)), ((ASTTipoArray) tipo).subclass, v2);
+                                      }
+                                    :}
+;
+
+atributo_struct ::= atributo_struct:v1 PUNTO ID:v2 
+                {:  
+                    //Chequeamos que sea una estructura
+                    if (!v1.tipo.isStruct())
+                      throw new NoEsEstructuraException(v1.toString(),parser.scanner.linea(),parser.scanner.columna()); 
+                      
+                    //Chequeamos que exista el atributo
+                    if (((ASTTipoStruct) v1.tipo).exists(v2))
+                      RESULT = new ASTExprStructElem(v1,v2,((ASTTipoStruct) v1.tipo).find(v2).obj,((ASTTipoStruct) v1.tipo).find(v2) );
+                      else
+                        throw new NoExisteAtributoException(v2,parser.scanner.linea(),parser.scanner.columna()); 
+                :}
+| ID:v1 PUNTO ID:v2 
+                {:
+                  //Chequeamos que este declarada
+                  if (parser.tablaVar.exist(v1)){
+                  info inf = parser.tablaVar.find(v1);
+                  ASTExprLValue lvalue = new ASTExprId(v1, inf);
+                  ASTTipo tipo = inf.obj;
+                  
+                  //Chequeamos que sea estructurada
+                  if (tipo.isStruct())
+                    //Chequeamos que el atributo exista
+                    if (((ASTTipoStruct) tipo).exists(v2))
+                      RESULT = new ASTExprStructElem(lvalue, v2, ((ASTTipoStruct)tipo).find(v2).obj,((ASTTipoStruct)tipo).find(v2) );
+                    else
+                      throw new NoExisteAtributoException(v1,parser.scanner.linea(),parser.scanner.columna()); 
+                  else
+                    throw new NoEsEstructuraException(v1,parser.scanner.linea(),parser.scanner.columna()); 
+                }
+                else
+                  throw new VariableNoDeclaradaException(v1, parser.scanner.linea(),parser.scanner.columna());
+                :}
+;
+
+iniarray ::= iniarray:v1 COMA expr:v2   {:  
+                                            RESULT = v1;
+                                            if (!((ASTExpr) v1.getFirst()).getTip().equals(v2.getTip()))
+                                              throw new DifTiposArrayException(parser.scanner.linea(),parser.scanner.columna());
+                                            else   
+                                              RESULT.add(v2); 
+                                        :}
+| iniarray:v1 COMA TKCHAR:v2          {:  
+                                          RESULT = v1; 
+                                            if (((ASTExpr) v1.getFirst()).getTip().isChar())
+                                              throw new DifTiposArrayException(parser.scanner.linea(),parser.scanner.columna());
+                                          RESULT.add(new ASTExprCharCtte(v2.toCharArray()[0])); 
+                                      :}
+| expr:v1                             {: RESULT = new LinkedList(); RESULT.add(v1);:}
+| TKCHAR:v1                           {: RESULT = new LinkedList(); RESULT.add(new ASTExprCharCtte(v1.toCharArray()[0])); :}
+;
+
+opruna ::= MINUS{:RESULT = "MINUS" ; :}
+| NEGACION       {:RESULT = "NEGACION" ; :}
+;
+
+ // ********************************************* ASIGNACION RARA ******************************************************************
+
+asignacionRara ::= lvalue:v1 MASMAS 
+       {:
+                                  if (v1.getTip().isEntero()){
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("+",v1,new ASTExprAritCtteInt(1)));
+                                    parser.bloque.add(RESULT); 
+                                  }
+                                  else if (v1.getTip().isFloat()){
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("+",v1,new ASTExprAritCtteFloat((float) 1.0)));
+                                    parser.bloque.add(RESULT);
+                                  }
+                                  else
+                                    throw new TiposIncompatiblesException(v1.toString(), parser.scanner.linea(),parser.scanner.columna());
+                                :}
+| lvalue:v1 MASIGUAL expr:v2  
+                                {:
+                                  if (v1.getTip().isNumber() && v2.getTip().isNumber()){
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("+",v1, v2));
+                                    parser.bloque.add(RESULT); 
+                                  }
+                                  else if (v1.getTip().isString() && v2.getTip().isString()){
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprStringBin(new ASTExprId(v1.getId(),v1.getInfo()),(ASTExprString) v2));
+                                    parser.bloque.add(RESULT); 
+                                  }
+                                  else
+                                    throw new TiposIncompatiblesException(v1.toString(),parser.scanner.linea(),parser.scanner.columna());
+                                :}
+| lvalue:v1 MENOSIGUAL expr:v2  {:  
+
+                                  if (v1.getTip().isNumber() && v2.getTip().isNumber()){
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("-",v1, v2));
+                                    parser.bloque.add(RESULT); 
+                                  }
+                                  else
+                                    throw new TiposIncompatiblesException(v1.toString(),parser.scanner.linea(),parser.scanner.columna());
+                                :}  
+| lvalue:v1 MENOSMENOS          {:
+                                  if (v1.getTip().isEntero()){
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("-",v1,new ASTExprAritCtteInt(1)));
+                                    parser.bloque.add(RESULT); 
+                                  }
+                                  else if (v1.getTip().isFloat()){
+                                    RESULT = new ASTInstAsigExp(v1, new ASTExprAritBin("-",v1,new ASTExprAritCtteFloat((float) 1.0)));
+                                    parser.bloque.add(RESULT); 
+                                  }
+                                  else
+                                    throw new TiposIncompatiblesException(v1.toString(),parser.scanner.linea(),parser.scanner.columna());
+
+                                 :}
+;
+

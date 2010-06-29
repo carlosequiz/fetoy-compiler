@@ -1,0 +1,8 @@
+{
+  sub main {
+    int y = 2;
+    int[2][2] x;
+    // Los arreglos comienzan en cero.
+    x[1][2] = 1;
+  }
+}

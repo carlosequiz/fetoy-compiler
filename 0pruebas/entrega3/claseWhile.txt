@@ -1,0 +1,12 @@
+{
+    int[2] z;
+	  sub main{
+      int y = 2;
+      int i = 0;
+      while (i < 2) {
+        z[i] = i;
+        print(z[i]);
+        i++; 
+      };
+	}
+}

@@ -1,0 +1,8 @@
+//Expresiones Booleanas sin cortocircuito
+{
+	sub main{
+    if ( true || false || true){
+        print(1);
+    };
+  }
+}

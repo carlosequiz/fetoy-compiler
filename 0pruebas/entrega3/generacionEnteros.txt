@@ -1,0 +1,9 @@
+{
+	int a;
+	sub main{
+		int y,w;
+	y = 8 mod 3;
+		y = 4 + 5;
+		w = (3 + 4 * 2 -5 )/ 4;
+	}
+}

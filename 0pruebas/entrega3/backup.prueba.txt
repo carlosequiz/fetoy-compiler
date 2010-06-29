@@ -1,0 +1,30 @@
+{
+	sub int gato(string a)
+	sub void perro()
+	int a0,b0,c0,d0;
+
+
+	sub void perro (){ 
+		bool a1 = true ,b1 = 3 + 3  > 3;
+		bool c1 = false;
+		string d1 = "hola";
+		string e1 = d1;
+	}
+
+	sub int gato(string b){
+		string a2;
+		string ra;
+		string a = "hola";
+		string c = b + "hola";
+
+	}
+
+	sub main{
+		bool a3 = true,d3;
+		int b3;
+		b3 = 2 + 3 + a0;
+		bool c3 = d3 && 3 < b3 || a3;
+
+	}
+		
+}

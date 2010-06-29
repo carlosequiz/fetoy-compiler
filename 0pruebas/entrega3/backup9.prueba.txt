@@ -1,0 +1,20 @@
+{
+	sub main{
+    bool b;
+    bool d;
+    int e = 1;
+    float e = 1.6;
+    if ( 'a' == 'd'){
+        print(1);
+    };
+    if ( b == d){
+        print(1);
+    };
+    if ( 1 >= e){
+        print(1);
+    };
+    if ( 1.5 >= f){
+        print(1);
+    };
+  }
+}

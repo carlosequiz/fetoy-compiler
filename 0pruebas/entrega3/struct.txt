@@ -1,0 +1,7 @@
+{
+	sub main{
+    int[2] e = [1,2];
+    struct { int x, struct {int y} a } b;
+    e[1] = b.a.y;
+	}
+}

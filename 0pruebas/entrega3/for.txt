@@ -1,0 +1,14 @@
+{ sub main{
+		int b;
+		for (; b < 10;){
+			float r;
+			r -= 4;
+			bool b =true;
+		};
+		for(char c ; 2 <1 ;){
+			c = 'a';
+		};
+		for(int c =2 ; c == 2; c++){
+			c-- ;
+		};
+	}}

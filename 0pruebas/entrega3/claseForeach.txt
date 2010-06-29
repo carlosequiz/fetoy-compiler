@@ -1,0 +1,17 @@
+/*
+  Este ejemplo esta diseñado para demostrar el funcionamiento del foreach.
+Podemos observar que la asignación dentro de la iteración no afecta el
+resultado. Al correr este programa en el simulador, debe dar 4.
+*/
+{
+	  sub main{
+      int[2] z;
+      int i = 0;
+      z[0] = 4;
+      foreach (x in z) {
+        x = i; 
+        i--;
+      };
+      print(z[0]);
+	}
+}

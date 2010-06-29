@@ -1,0 +1,14 @@
+{
+  sub main {
+    struct {
+              int x ,
+              int x1,
+              union int d { 2: { int t, int r, int al, int yl}
+                            3: { int f, int f1, int f2} }
+            } a;
+    a.yl = 8;
+    a.f = 4;
+    print(a.yl);
+    print(a.f);
+  }
+}

@@ -1,0 +1,12 @@
+{
+	sub main{
+		int[4] afuera;
+    afuera[0] = 0;
+    afuera[1] = 1;
+    afuera[2] = 2;
+    afuera[3] = 3;
+		foreach (x in afuera) {
+			print(x);
+		};
+	}
+}

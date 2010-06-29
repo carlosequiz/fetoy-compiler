@@ -1,0 +1,14 @@
+sub void fun(int[3], int);
+{
+  sub void fun(int[3] t, int f){
+    print(t[0]);
+    print(t[1]);
+    print(t[2]);
+    print(f);
+  }
+
+  sub main {
+    int[3] a = [1,2,3];
+    fun(a, 2);
+  }
+}

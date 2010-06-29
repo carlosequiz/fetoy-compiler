@@ -1,0 +1,11 @@
+{
+  sub main {
+    struct { int x, int y} a;
+    struct { int x, int y} b;
+    a.x = 2;
+    a.y = 9; 
+    b = a;
+    print(a.x);
+    print(b.y);
+  }
+}

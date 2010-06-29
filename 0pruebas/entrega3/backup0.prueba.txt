@@ -1,0 +1,10 @@
+//Expresiones Booleanas sin cortocircuito
+{
+	sub main{
+    float i  = 3.5;
+    i = 3;
+    print(i);
+    i += 3.7;
+    print(i); 
+  }
+}

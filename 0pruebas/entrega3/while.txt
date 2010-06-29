@@ -1,0 +1,13 @@
+{
+  sub main{
+    int afuera;
+    while true {
+      bool dentr;
+      dentr = true;
+      if ( 5 < afuera){
+        bool dentr1 = 3 < afuera;
+      };
+    };
+    afuera = 5 + 1;
+  }
+}

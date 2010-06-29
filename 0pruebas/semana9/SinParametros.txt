@@ -1,0 +1,13 @@
+sub void elias();
+{
+  sub void elias(){
+    print(2);
+  }
+
+  sub main {
+    elias();
+    print(5);  
+    elias();
+    print(6);  
+  }
+}

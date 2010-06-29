@@ -1,0 +1,11 @@
+sub void fun(int, int, int);
+{
+  sub void fun(int b, int d, int h){
+    int r = 4;
+    print(h + r);
+  }
+
+  sub main {
+    fun(2, 3, 4);
+  }
+}

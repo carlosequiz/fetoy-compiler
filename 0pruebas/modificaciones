@@ -1,0 +1,33 @@
+Modificaciones que hemos hecho desde la entrega de semana 9.
+
+* Agregar el Break
+* Procedimientos con pasaje de parametros por referencia 
+* Procedimientos con pasaje de parametros por valor
+* Procedimientos sin pasaje de parametros
+* Se pueden asignar arreglos y structs
+* Literales de Arreglos
+* Para cargar la direccion de un lvalue, usas el metodo cargaDireccion, y se deja en el toCode, el valor siempre. 
+
+Funciones viejas modificadas
+* funcion ahora es un proc.
+* addAll
+* Cambie el metodo en ASTBloque, para agregarle al principio los strings de error.
+* En expresion.cup, modifique el bloqueb, que estaba creando 2 veces la tabla de simbolos
+* Agregue a info parametros extra para saber si es pasaje por valor, el numero de parametro que es(Los hashtable pierden esa condicion).
+* Symtable, de pertenecer a la tabla de simbolos de una funcion, tiene un atributo que es la espacio usado por los parametros que contiene.
+
+****************************
+
+Modificaciones que faltan
+
+* Chequeo dinamicos de struct
+* Chequeo de que la llamada a funcion tenga la cantidad de parametros correctos
+* Retornar valores del procedimiento.
+* Agregar lectura de Variables
+* Dejar de que imprima la linea vacia cuando llames a salvar y restaurar.
+* Chequeo de que exista un return en el procedimiento cuando devuelva un parametro.
+* Casteos de flotantes en el switch. Cuando comparas registros, debemos tomar en cuenta si la comparacion es de flotantes o enteros.
+* Chequear la compatibilidad de los arreglos(Casteos explicitos)
+* Null pointer exception cuando inicializas variables globales
+* Cambiar algunas de las print que reflejan excepciones por excepciones
+* Chequear que si la funcion retorna algo, debe asignarlo a una variable

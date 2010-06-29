@@ -1,0 +1,14 @@
+sub void fun(struct {int x, int y}, int);
+{
+  sub void fun(struct {int x, int y} t, int f){
+    print(t.y);
+  }
+
+  sub main {
+    struct {int x, int y} a;
+    a.x = 2;
+    a.y = 3;
+    fun(a, 2);
+    print(a.x);
+  }
+}

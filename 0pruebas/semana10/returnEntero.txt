@@ -1,0 +1,12 @@
+sub int fun(int);
+{
+  sub int fun(int x){
+    return 4;
+  }
+
+  sub main {
+    int f = 3;
+    f = fun(2);
+    print(f);
+  }
+}

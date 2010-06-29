@@ -1,0 +1,21 @@
+{
+  sub main {
+    struct {
+              int x ,
+              int x1,
+              struct { int d, struct { int al, int yl} y } f
+            } a;
+    int[10] t;
+    for(int i = 0; i < 10; i++){
+      t[i] = i;
+    };
+    for(int i = 0; i < 10; i++){
+      print(t[i]);
+    };
+    a.f.y.al = 13;
+    print(a.f.y.al);
+    for(int i = 0; i < 10; i++){
+      print(t[i]);
+    };
+  }
+}
