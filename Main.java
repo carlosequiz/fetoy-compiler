@@ -14,11 +14,7 @@ public class Main {
     throws java.io.IOException, java.lang.Exception
   {
     //Global.out = System.out ;
-    if (argv[1].equals("1"))
-      Global.out = System.out ;
-    else
-      Global.out = new PrintStream(new FileOutputStream("/home/e3/elias.s"));
-    //Global.out = new PrintStream(new FileOutputStream(argv[1]));
+    Global.out = new PrintStream(new FileOutputStream(argv[1]));
     Lexer scanner = null;
     try {
       scanner = new Lexer( new java.io.FileReader(argv[0]) );

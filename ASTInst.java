@@ -1,7 +1,7 @@
 import java.util.*;
 
 abstract class ASTInst {
-  abstract boolean toCode(int pr, int prf, String proxI);
+  abstract boolean toCode(int pr, int prf, String proxI, String jumpBreak);
   abstract tripleta tam( tripleta tr);
 }
 
@@ -25,7 +25,7 @@ class ASTInstImprime extends ASTInst {
   //@ requires pr % Registros.maxT > 0; 
   //@ requires prf % Registros.maxF > 0; 
   //@ requires Global.out != null; 
-  boolean toCode(int pr, int prf, String proxI){
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     String reg = Registros.T[pr % Registros.maxT];
     String regF = Registros.F[prf % Registros.maxF];
     ASTTipo tipo = expr.getTip();
@@ -86,7 +86,7 @@ class ASTInstAsigExp extends ASTInstAsig {
     return exp.getTip().equals(d) || exp.getTip().isCompatible(d);
   }
 
-  boolean toCode(int pr, int prf, String proxI){
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     String reg = Registros.T[pr % Registros.maxT];
     String reg2 = Registros.T[(pr + 1) % Registros.maxT];
 
@@ -222,25 +222,20 @@ class ASTInstBloque extends ASTInst{
   }
 
   //@ requires Global.out!=null;
-  boolean toCode(int pr, int prf, String proxI){
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     boolean us = false;
-    String proxI2;
+    String proxI2 = "";
     int y = inst.size();
-    for (int  i = 0; i < y; i++){
-      if (i + 1 == y)
-        proxI2 = proxI;
-      else
-        proxI2 = Global.nuevaEtiqueta();
-      if (((ASTInst) inst.get(i)) instanceof ASTInstBreak){
-        us = true;
-        ASTInstBreak br = (ASTInstBreak) inst.get(i);
-        if (br != null) 
-          br.toCode(pr, prf,proxI2);
-      }
+//    System.out.println("jumpBreak "+jumpBreak);
+    for (int  i = 0; i < y -1; i++){
+      proxI2 = Global.nuevaEtiqueta();
       ASTInst ins = (ASTInst) inst.get(i);
-      if (ins!= null && ins.toCode(pr,prf, proxI2) && (i + 1 !=y))
+      if (ins.toCode(pr,prf, proxI2,jumpBreak)){
         Global.out.println(proxI2 +":");
+      }
     }
+    if (y !=0)
+      us = ((ASTInst) inst.get(y-1)).toCode(pr,prf,proxI,jumpBreak);
     return us;
   }
 }
@@ -287,31 +282,42 @@ class ASTInstIf extends ASTInst{
   }
 
   //@ requires Global.out != null;
-  boolean toCode(int pr, int prf, String proxI){
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     String y = Registros.T[pr % Registros.maxT];
-    String NE = Global.nuevaEtiqueta();
-    guarda.toCode(pr,prf,NE);
-    Global.out.println("beqz "+y+" , "+NE);
-    cuerpo.toCode(pr,prf, proxI);
-    Global.out.println(" j " + proxI);
-    Global.out.println(NE+":");
-    if ( elseif !=null){
-      int y1 = elseif.size();
-      for (int i = 0; i < y1; i++){
-        ASTInstElseIf eif = (ASTInstElseIf) elseif.get(i);
-        if (eif != null)
-          if (i + 1 == y1)
-            if (els == null)
-              eif.toCode(pr, prf, proxI,true,false);
-            else
-              eif.toCode(pr, prf, proxI,true,true);
+    boolean us = false;
+    if ((elseif != null && (elseif.size() != 0)) || els !=null){
+      us = true;
+      String NE = Global.nuevaEtiqueta();
+      guarda.toCode(pr,prf,NE);
+      Global.out.println("beqz "+y+" , "+NE);
+      cuerpo.toCode(pr,prf, proxI,jumpBreak);
+      Global.out.println("j " + proxI);
+      Global.out.println(NE+":");
+      if ( elseif !=null){
+        int y1 = elseif.size();
+        ASTInstElseIf eif = null; 
+        for (int i = 0; i < y1-1; i++){
+          eif = (ASTInstElseIf) elseif.get(i);
+          if (eif != null)
+            eif.toCode(pr, prf, proxI,false,false,jumpBreak);
+        }
+        if (y1 != 0){
+          eif = (ASTInstElseIf) elseif.get(y1-1);
+          if (els == null)
+            eif.toCode(pr, prf, proxI,true,false,jumpBreak);
           else
-            eif.toCode(pr, prf, proxI,false,false);
+            eif.toCode(pr, prf, proxI,true,true,jumpBreak);
+        }
       }
+      if(els != null)
+        els.toCode(pr,prf, proxI,jumpBreak);
     }
-    if(els != null)
-      els.toCode(pr,prf, proxI);
-    return true;
+    else{
+      guarda.toCode(pr,prf,proxI);
+      Global.out.println("beqz "+y+" , "+proxI);
+      us = cuerpo.toCode(pr,prf, proxI,jumpBreak);
+    }
+    return us;
   }
 
   tripleta tam(tripleta tr){
@@ -360,11 +366,11 @@ class ASTInstElseIf extends ASTInstElses{
     return " elseif "+guarda+"\n"+bloque;
   }
 
-  boolean toCode(int pr, int prf, String proxI){
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     return false;
   }
 
-  boolean toCode(int pr, int prf, String proxI, boolean ultimo, boolean els){
+  boolean toCode(int pr, int prf, String proxI, boolean ultimo, boolean els,String jumpBreak){
     String NE = null;
     String y = Registros.T[pr % Registros.maxT];
     if (ultimo && !els)
@@ -373,7 +379,7 @@ class ASTInstElseIf extends ASTInstElses{
       NE = Global.nuevaEtiqueta();
     guarda.toCode(pr,prf,NE);
     Global.out.println("beqz "+y+" , "+ NE);
-    bloque.toCode(pr, prf, proxI);
+    bloque.toCode(pr, prf, proxI,jumpBreak);
     if (!ultimo || els)
       Global.out.println("j "+proxI);
     if (!ultimo || (ultimo && els))
@@ -406,8 +412,8 @@ class ASTInstElse extends ASTInstElses{
     return  "\n else \n"+bloque;
   }
 
-  boolean toCode(int pr, int prf, String proxI){
-    return bloque.toCode(pr, prf, proxI);
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
+    return bloque.toCode(pr, prf, proxI,jumpBreak);
     //Sera necesario saltar a proxima instrucción?
   }
 
@@ -433,20 +439,22 @@ class ASTInstWhile extends ASTInst{
     return "while "+guarda+" "+bloque;
   }
 
-  boolean toCode(int pr, int prf, String proxI){
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     String NE= Global.nuevaEtiqueta();
     String NE2= Global.nuevaEtiqueta();
     String y = Registros.T[pr % Registros.maxT];
     boolean us = false;
     Global.out.println("j "+NE);
     Global.out.println(NE2+":");
-    if (bloque.toCode(pr,prf, proxI))
+//    System.out.println("proxI "+proxI);
+//    System.out.println("jumpBreak "+jumpBreak );
+    if (bloque.toCode(pr,prf, NE,proxI))
       us = true;
     Global.out.println(NE+":");
     if (guarda.toCode(pr,prf,NE2))
       us = true; 
     Global.out.println("bnez "+y+" , "+NE2);
-    return us;
+    return true;
   }
   tripleta tam(tripleta tr){
     return bloque.tam(tr);
@@ -483,24 +491,25 @@ class ASTInstFor extends ASTInst{
     return ret;
   }
 
-  boolean toCode(int pr, int prf, String proxI){
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     String NE = Global.nuevaEtiqueta();
     String NE2 = Global.nuevaEtiqueta();
+    String NE3 = Global.nuevaEtiqueta();
     String y = Registros.T[pr % Registros.maxT];
     boolean us = false;
-    if ((inicial!= null) && inicial.toCode(pr, prf, NE))
-      us = true;
+//System.out.println(aumento);
+    if (inicial!= null)
+      inicial.toCode(pr, prf, NE,jumpBreak);
     Global.out.println("j "+NE);
     Global.out.println(NE2+":");
-    if (bloque.toCode(pr, prf, NE))
-      us = true;
-    if ((aumento!= null) && aumento.toCode(pr, prf,NE))
-      us = true;
+    if (bloque.toCode(pr, prf, NE3,proxI) && aumento!=null)
+      Global.out.println(NE3+":");
+    if (aumento!= null)
+      aumento.toCode(pr, prf,NE,jumpBreak);
     Global.out.println(NE+":");
-    if (bool.toCode(pr,prf,proxI))
-      us = true; 
+    bool.toCode(pr,prf,proxI);
     Global.out.println("bnez "+y+" , "+NE2);
-    return us;
+    return true;
   }
 
   tripleta tam(tripleta tr){
@@ -528,7 +537,7 @@ class ASTInstForeach extends ASTInst{
     return "foreach ("+temp+" in  "+ arreglo +") "+bloque;
   }
 
-  boolean toCode(int pr, int prf, String proxI){
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     String b = Global.nuevaEtiqueta();
     //Calculo el tamaño de los elementos
     int tamano = ((ASTTipoArray) arreglo.obj).subclass.tam; 
@@ -546,7 +555,7 @@ class ASTInstForeach extends ASTInst{
     Global.out.println("add " + reg + ","+ reg2 + ","+ reg +"");
 
     //Ejecuto el bloque de codigo 
-    bloque.toCode( pr + 3, prf, proxI);
+    bloque.toCode( pr + 3, prf, proxI,jumpBreak);
 
     //Calculo de i.
     Global.out.println("add " +reg2 + ", " + reg2 + ","+tamano);
@@ -586,7 +595,7 @@ class ASTInstSwitch extends ASTInst{
     return ret;
   }
 
-  boolean toCode(int pr, int prf, String proxI){
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     String actual = Registros.T[pr % Registros.maxT];
     String sig = Registros.T[(pr + 1) % Registros.maxT];
     String NE = Global.nuevaEtiqueta();
@@ -600,12 +609,12 @@ class ASTInstSwitch extends ASTInst{
         ASTExpr e1 = (ASTExpr) expr.get(i);
         e1.toCode(pr+1,prf + 1,proxI);
         Global.out.println("bne "+actual+","+sig+" ,"+proxI);
-        ((ASTInstBloque) bloque.get(i)).toCode(pr+1,prf,proxI);
+        ((ASTInstBloque) bloque.get(i)).toCode(pr+1,prf,proxI,jumpBreak);
       }else{
         ASTExpr e1 = (ASTExpr) expr.get(i);
         e1.toCode(pr+1,prf,proxI);
         Global.out.println("bne "+actual+","+sig+" ,"+NE);
-        ((ASTInstBloque) bloque.get(i)).toCode(pr+1,prf,proxI);
+        ((ASTInstBloque) bloque.get(i)).toCode(pr+1,prf,proxI,jumpBreak);
         Global.out.println("j "+proxI);
         Global.out.println(NE+":");
         NE = Global.nuevaEtiqueta();
@@ -628,6 +637,8 @@ class ASTInstSwitch extends ASTInst{
 }
 
 class ASTInstFuncion extends ASTInst {
+
+  String nombrefuncion;
   LinkedList param;
   Proc procedimiento;
 
@@ -652,13 +663,12 @@ class ASTInstFuncion extends ASTInst {
     return ret;
   }
 
-  boolean toCode(int pr, int prf, String proxI){
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     if (procedimiento.retType!=null)
       Global.out.println("add $sp, $sp, -"  + procedimiento.retType.tam);
     
     //Salvo Registros
     Global.out.println(Registros.salvarRegistrosLlamador(pr));
-    
     //Empilo parametros
     if (param != null)
       Registros.empilarParametros(param, procedimiento);
@@ -687,8 +697,8 @@ class ASTInstFuncion extends ASTInst {
 }
 
 class ASTInstBreak extends ASTInst{
-  boolean toCode(int pr, int prf, String p){
-    Global.out.println("j "+p);
+  boolean toCode(int pr, int prf, String p,String jumpBreak){
+    Global.out.println("j "+jumpBreak);
     return true;
   }
   tripleta tam(tripleta tr){
@@ -704,7 +714,7 @@ class ASTInstReturn extends ASTInst{
     this.exp = e;
   }
 
-  boolean toCode(int pr, int prf, String p){
+  boolean toCode(int pr, int prf, String p,String jumpBreak){
     String reg = Registros.T[pr % Registros.maxT];
     exp.toCode(pr, prf, p);
     System.out.println(retParam);

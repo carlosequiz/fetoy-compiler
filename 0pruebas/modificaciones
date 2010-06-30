@@ -1,5 +1,6 @@
 Modificaciones que hemos hecho desde la entrega de semana 9.
 
+* Chequeo de que la llamada a funcion tenga la cantidad de parametros correctos
 * Agregar el Break
 * Procedimientos con pasaje de parametros por referencia 
 * Procedimientos con pasaje de parametros por valor
@@ -21,7 +22,6 @@ Funciones viejas modificadas
 Modificaciones que faltan
 
 * Chequeo dinamicos de struct
-* Chequeo de que la llamada a funcion tenga la cantidad de parametros correctos
 * Retornar valores del procedimiento.
 * Agregar lectura de Variables
 * Dejar de que imprima la linea vacia cuando llames a salvar y restaurar.

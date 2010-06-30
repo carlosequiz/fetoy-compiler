@@ -29,6 +29,19 @@ public class ProcTable {
     return table.containsKey(a);
   }
 
+  boolean param(String fun,LinkedList param){
+    if (!table.containsKey(fun))
+      return false;
+    LinkedList paramFun = ((Proc) table.get(fun)).getParam();
+    if (param.size() != paramFun.size())
+      return false;
+    for (int i = 0; i < paramFun.size();i++){
+      if (!((ASTExpr) param.get(i)).getTip().isCompatible((ASTTipo) paramFun.get(i)))
+        return false;
+    }
+    return true;
+  }
+
   boolean equals(ProcTable e){
     for  (Enumeration a = table.keys(); a.hasMoreElements() ;){
       String b = (String) a.nextElement();
@@ -63,6 +76,10 @@ class Proc {
     nombre = nom;
     retType = ret;
     param = par;
+  }
+
+  LinkedList getParam(){
+    return param;
   }
 
   Proc (String nom, ASTTipo ret, LinkedList par, ASTInstBloque c){
@@ -110,7 +127,7 @@ class Proc {
     String labelBreak = Global.nuevaEtiquetaBreak();
 
     //codigo Cuerpo. Cual seria la proxima instruccion aca?
-    cuerpo.toCode(pr, prf, labelBreak);
+    cuerpo.toCode(pr, prf, labelBreak,"fin");
 
     //Restaurar registro llamado
     Global.out.println(labelBreak + ":");

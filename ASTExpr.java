@@ -781,7 +781,6 @@ class ASTExprId extends ASTExprLValue {
   }
 
   boolean toCode(int pr, int prf, String a){
-    System.out.println(inf.onreg);
     cargaDireccion(pr,prf, a);
     getRValue(pr, prf, inf.obj);
 
@@ -943,7 +942,7 @@ class ASTExprFun extends ASTExpr {
 
   boolean toCode(int pr, int prf, String proxI){
     String reg = Registros.T[pr % Registros.maxT];
-    ai.toCode(pr, prf, proxI);
+    ai.toCode(pr, prf, proxI,"fin");
     Global.out.println("add $sp, $sp, 4");
     Global.out.println("lw " +reg +", ($sp)");
     
@@ -955,4 +954,3 @@ class ASTExprFun extends ASTExpr {
   }
 
 }
-

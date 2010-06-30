@@ -77,7 +77,7 @@ terminal IGUAL;
 terminal COMA;
 terminal LPAREN;
 terminal RPAREN;
-terminal String  TKCHAR;
+terminal String TKCHAR;
 terminal String TKSTRING;
 terminal TRUE;
 terminal FALSE;
@@ -155,7 +155,7 @@ non terminal rep2;
 non terminal rep3;
 non terminal bloqueR;
 non terminal stmtsR;
-non terminal stmtsRS;
+non terminal LinkedList stmtsRS;
 non terminal LinkedList dec;
 non terminal ASTInstAsig asig;
 non terminal switche;
@@ -177,6 +177,10 @@ non terminal structUnion lista_union;
 non terminal LinkedList parametros;
 non terminal ASTTipoStruct st;
 non terminal ASTInst imprime;
+non terminal seleccion1;
+non terminal switche1;
+non terminal LinkedList case1;
+
 
 /* Precedences */
 precedence left IGUALIGUAL, DIFERENTE;
@@ -194,7 +198,7 @@ start with inicial;
 
 /* The grammar */
 
-inicial ::=  declaraciones promesas LLLAVE declaraciones {:parser.principal = new ASTBloquePrincipal(parser.tablaVar); :} procedimiento principal procedimiento RLLAVE 
+inicial ::=  promesas LLLAVE declaraciones {:parser.principal = new ASTBloquePrincipal(parser.tablaVar); :} procedimiento principal procedimiento RLLAVE 
             {:if(!parser.funciones.equals(parser.promesas))
                 throw new PromesaNoDeclaradaException(parser.scanner.linea(), parser.scanner.columna());
               //System.out.println(parser.principal);
@@ -234,8 +238,8 @@ declaraciones ::= declaraciones declaracion PYC
 |  
 ;
 
-procedimiento ::= procedimiento:v1 SUB tipoP:v2 ID:v3 {: parser.tablaVar= new SymTable(parser.tablaVar); :} LPAREN param:v4 RPAREN bloqueb:v5 
-                                                      {:
+procedimiento ::= procedimiento:v1 SUB tipoP:v2 ID:v3 {:parser.tablaVar= new SymTable(parser.tablaVar); :} LPAREN param:v4 RPAREN bloqueb:v5 
+                                                     {:
                                                         Proc a = new Proc(v3,v2,v4, parser.bloque);
                                                         if (parser.promesas.equals(v3,a)){
                                                           parser.principal.add(v3,a);
@@ -308,7 +312,7 @@ bloqueb ::=LLLAVE {: parser.bloque = new ASTInstBloque(parser.bloque);
                                     :}
 ;
 
-bloqueR ::=LLLAVE stmtsR RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
+bloqueR ::=LLLAVE   stmtsRS RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
                                     parser.tablaVar = parser.tablaVar.prev ;  
                                  :}
 ;
@@ -499,6 +503,8 @@ deftipo ::= TYPEDEF tipo:v1 ID:v2 {:
 llamadafuncion ::= ID:v1 LPAREN parame:v2 RPAREN 
                                                 {:if (!parser.promesas.isHere(v1))
                                                     throw new FuncionNoDeclaradaException(v1,parser.scanner.linea(),parser.scanner.columna()); 
+                                                  if (!parser.promesas.param(v1,v2))
+                                                    throw new ParametrosException(v1,parser.scanner.linea(),parser.scanner.columna());
                                                   String ret = parser.funciones.getRet(v1).toString(); 
                                                   Proc procInfo = parser.funciones.get(v1);                                                 
                                                   ASTInstFuncion f1 = new ASTInstFuncion(v2, procInfo);
@@ -514,10 +520,10 @@ llamadafuncion ::= ID:v1 LPAREN parame:v2 RPAREN
 ;
 
 parame ::= parame:v1 COMA expr:v2 {: RESULT = v1; RESULT.add(v2);:}
-| parame:v1 COMA TKCHAR:v2 {:RESULT = v1; RESULT.add(v2); :}
+| parame:v1 COMA TKCHAR:v2 {:RESULT = v1; RESULT.add(new ASTExprCharCtte(v2.toCharArray()[0])); :}
 | expr:v1 {: RESULT = new LinkedList(); RESULT.add(v1); :}
-| TKCHAR:v1 {:RESULT = new LinkedList(); RESULT.add(v1); :}
-|
+| TKCHAR:v1 {:RESULT = new LinkedList(); RESULT.add(new ASTExprCharCtte(v1.toCharArray()[0])); :}
+| {:RESULT = new LinkedList();:}
 ;
 
  // ********************************************************** SWITCH ***************************************************************
@@ -541,6 +547,49 @@ switche ::= SWITCH LPAREN expr:v1 RPAREN LLLAVE case:v2 RLLAVE {:  LinkedList ca
                                                                   parser.bloque.add(new ASTInstSwitch(v1,casos,bloques));
                                                                 :}
 ;
+
+switche1 ::= SWITCH LPAREN expr:v1 RPAREN LLLAVE case1:v2 RLLAVE {:  LinkedList casos = new LinkedList(); 
+                                                                  LinkedList bloques = new LinkedList();
+                                                                  for (int i = 0; i < v2.size(); i++){
+                                                                    if (i%2 == 0){
+                                                                      ASTExpr caseexp = (ASTExpr)v2.get(i);
+                                                                      if (!caseexp.getTip().isCompatible(v1.getTip()) )
+                                                                        throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                                                      
+                                                                      //Casteo Implicito
+                                                                      if (v1.getTip().isFloat() && caseexp.getTip().isEntero())
+                                                                        caseexp = new ASTExprCast(caseexp, new ASTTipoFloat());
+
+                                                                      casos.add(caseexp);
+                                                                    } else
+                                                                      bloques.add(v2.get(i));
+                                                                  }  
+                                                                  parser.bloque.add(new ASTInstSwitch(v1,casos,bloques));
+                                                                :}
+;
+
+case1::= case1:v1 CASE expr:v2 DOSPUNTOS bloqueR {:  RESULT = v1; 
+                                                  if (v1 == null)
+                                                    System.out.println("En el case, la expr es nula");
+                                                  if (v2.Id())
+                                                    throw new NoIdException(parser.scanner.linea(),parser.scanner.columna());
+                                                  RESULT.add(v2);
+                                                  RESULT.add(parser.bloque);
+                                                  parser.bloque = parser.bloque.padre;
+                                                :}
+| CASE expr:v1 DOSPUNTOS bloqueR {:RESULT = new LinkedList();
+                                  if (v1 == null)
+                                    System.out.println("En el case, la expr es nula");
+                                  if (v1.Id())
+                                    throw new NoIdException(parser.scanner.linea(), parser.scanner.columna());
+                                  RESULT.add(v1);
+                                  RESULT.add(parser.bloque);
+                                  parser.bloque = parser.bloque.padre;
+                                :}
+;
+
+
+
 
 case ::= case:v1 CASE expr:v2 DOSPUNTOS bloque {:  RESULT = v1; 
                                                   if (v1 == null)
@@ -685,25 +734,55 @@ asig ::= lvalue:v1 IGUAL expr:v2 {:
                                  :}
 |
 ;
-
-stmtsR ::= stmtsR stmtsRS PYC 
-| stmtsRS PYC
+stmtsR ::= asignacion
+| asignacionRara
+| declaracion
+| seleccion1
+| repeticion
+| switche1
+| llamadafuncion
+| deftipo
+| imprime
+| BREAK {: parser.bloque.add(new ASTInstBreak()); :}
 ;
 
-stmtsRS ::= stmt
-| BREAK PYC {: parser.bloque.add(new ASTInstBreak()); :}
+stmtsRS ::= stmtsRS:v1 stmtsR:v2 PYC
+  {:RESULT = v1;
+    if (v1 != null)
+      RESULT.add(v1);
+  :}
+| stmtsR:v1 PYC
+  {:RESULT = new LinkedList() ;
+    if (v1 != null){
+      RESULT.add(v1);
+    }
+  :}
 ;
 
   // ************************************************* IF *********************************8**************************
 
-seleccion ::= IF expr:v1 bloque:v2 elseif:v3 
+seleccion1 ::= IF expr:v1 {:parser.bloque = new ASTInstBloque(parser.bloque); 
+                           parser.tablaVar = new SymTable(parser.tablaVar);
+                         :} bloqueR elseif:v3 
 {:if (!v1.getTip().isBool())
       throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
     parser.bloque.padre.add(new ASTInstIf(parser.bloque,v1,v3));
     parser.bloque = parser.bloque.padre;
 :}
 ;
- 
+
+seleccion ::= IF expr:v1 {:parser.bloque = new ASTInstBloque(parser.bloque); 
+                           parser.tablaVar = new SymTable(parser.tablaVar);
+                         :} bloque elseif:v3 
+{:if (!v1.getTip().isBool())
+      throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+    parser.bloque.padre.add(new ASTInstIf(parser.bloque,v1,v3));
+    parser.bloque = parser.bloque.padre;
+:}
+;
+
+
+
 elseif ::= ELSEIF expr:v1 bloque elseif:v3 {:if (!v1.getTip().isBool())
                                                   throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
                                                   v3.addFirst(new ASTInstElseIf(v1,parser.bloque)); 

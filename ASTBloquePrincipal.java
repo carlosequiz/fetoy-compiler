@@ -52,7 +52,7 @@ class ASTBloquePrincipal {
     tripleta y = main.tam(new tripleta(i,0,0));
     Global.out.println("add $sp, $sp, -" + y.espacio);
     
-    main.toCode(pr, prf, "fin");
+    main.toCode(pr, prf, "fin","fin");
     Global.out.println("fin: li $v0 10\nsyscall");
     Global.out.println("error:");
     Global.out.println("la $a0, str1");    
