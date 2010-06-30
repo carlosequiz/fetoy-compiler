@@ -198,11 +198,13 @@ start with inicial;
 
 /* The grammar */
 
-inicial ::=  promesas LLLAVE declaraciones {:parser.principal = new ASTBloquePrincipal(parser.tablaVar); :} procedimiento principal procedimiento RLLAVE 
+inicial ::=  promesas LLLAVE {:parser.bloque = new ASTInstBloque(null); :} 
+  declaraciones {:parser.principal = new ASTBloquePrincipal(parser.tablaVar,parser.bloque); :} 
+    procedimiento principal procedimiento RLLAVE 
             {:if(!parser.funciones.equals(parser.promesas))
                 throw new PromesaNoDeclaradaException(parser.scanner.linea(), parser.scanner.columna());
-              //System.out.println(parser.principal);
-              parser.principal.toCode(0,0);
+              System.out.println(parser.principal);
+              //parser.principal.toCode(0,0);
             :}
 ;
 

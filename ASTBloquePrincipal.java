@@ -6,10 +6,12 @@ class ASTBloquePrincipal {
   SymTable global;
   Hashtable funciones;
   ASTInstBloque main;
+  ASTInstBloque inicializacionesGlobales;
 
-  ASTBloquePrincipal(SymTable tabla){
+  ASTBloquePrincipal(SymTable tabla,ASTInstBloque in){
     global = tabla;
     funciones = new Hashtable();
+    inicializacionesGlobales = in;
     main = null;
   }
 
@@ -33,6 +35,7 @@ class ASTBloquePrincipal {
     }
     if (main != null){
       ret += "\nMAIN\n";
+      main.mergeAST(inicializacionesGlobales);
       ret += main;
     }
     return ret;
@@ -52,6 +55,7 @@ class ASTBloquePrincipal {
     tripleta y = main.tam(new tripleta(i,0,0));
     Global.out.println("add $sp, $sp, -" + y.espacio);
     
+    main.mergeAST(inicializacionesGlobales);
     main.toCode(pr, prf, "fin","fin");
     Global.out.println("fin: li $v0 10\nsyscall");
     Global.out.println("error:");

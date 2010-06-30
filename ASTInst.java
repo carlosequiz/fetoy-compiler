@@ -166,6 +166,17 @@ class ASTInstBloque extends ASTInst{
     inst = new LinkedList();
     t = null;
   }
+  
+  void mergeAST(ASTInstBloque a){
+    LinkedList ls = a.getInst();
+    for (int i = 0; i < ls.size();i++){
+      this.inst.addFirst(ls.get(i));
+    }
+  }
+  
+  LinkedList getInst(){
+    return inst;
+  }
 
   void addTable(SymTable t){
     this.t = t;
@@ -663,7 +674,7 @@ class ASTInstFuncion extends ASTInst {
     return ret;
   }
 
-  boolean toCode(int pr, int prf, String proxI){
+  boolean toCode(int pr, int prf, String proxI,String jumpBreak){
     if (procedimiento.retType!=null){
       Global.out.println("la $v1, ($sp)");
       Global.out.println("add $sp, $sp, -"  + procedimiento.retType.tam);
