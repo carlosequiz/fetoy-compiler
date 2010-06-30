@@ -118,8 +118,7 @@ class Proc {
     Global.out.println("la $fp, ($sp)");
 
     //Reservar variables locales, no deberia tomar en cuenta parametros, ni return address ni frame pointer.
-    int desp = 12;
-    int tamBloque = cuerpo.t.tam(new tripleta(desp,0,0)).espacio;
+    int tamBloque = cuerpo.t.tam(new tripleta(0,0,0)).espacio;
 
     Global.out.println("add $sp, $sp, -" + tamBloque);
 
@@ -141,7 +140,7 @@ class Proc {
 
     //Retornar
     Global.out.println("jr $ra");
-
+    System.out.println(cuerpo.t);
   }
 
 }

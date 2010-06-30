@@ -1,11 +1,12 @@
-sub void fun(int);
+sub int fun();
 {
-  sub void fun(int x){
-    int x =3;
-    print(x);
+  sub int fun(){
+    return 3;
   }
 
   sub main {
-    fun(3);
+    int f = 4;
+    f = fun();
+    print(f);
   }
 }
