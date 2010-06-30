@@ -92,7 +92,7 @@ public class info {
     }
     else {
       String desp2 = "" + desp; 
-      if(onparam) desp2 = "-" + desp;
+      if(!onparam) desp2 = "-" + desp;
 
       if (obj.isFloat()){
         Global.out.println("add "+ siguiente + ", $fp, " + desp2);

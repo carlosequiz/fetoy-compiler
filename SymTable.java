@@ -84,7 +84,7 @@ class SymTable {
   }
 
   int retParam(){
-    return 16 + tamParam();
+    return 8 + tamParam();
   }
 
   int tamParam(){
@@ -98,6 +98,14 @@ class SymTable {
     return tamParam; 
   }
 
+  boolean onProc(){
+    for ( Enumeration a = table.elements(); a.hasMoreElements() ;){
+      info y  = (info) a.nextElement();
+      if (y.onparam) return true; 
+    }
+    return false;
+  }
+
   //@ requires tr !=null;
   tripleta tam(tripleta tr){
     int regS = tr.regS;
@@ -107,7 +115,7 @@ class SymTable {
     if (table.isEmpty())
       return tr;
     int i = esp;
-    int i2 = esp;
+    int i2 = 12;
     info y = null;
     for ( Enumeration a = table.keys(); a.hasMoreElements() ;){
       String ria  = (String) a.nextElement();

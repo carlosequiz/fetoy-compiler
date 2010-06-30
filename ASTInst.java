@@ -653,12 +653,20 @@ class ASTInstFuncion extends ASTInst {
   }
 
   boolean toCode(int pr, int prf, String proxI){
-    if (procedimiento.retType!=null)
+    if (procedimiento.retType!=null){
+      Global.out.println("la $v1, ($sp)");
       Global.out.println("add $sp, $sp, -"  + procedimiento.retType.tam);
+    }
     
     //Salvo Registros
     Global.out.println(Registros.salvarRegistrosLlamador(pr));
     
+    //Salvo Apuntador de Return
+    if (procedimiento.retType!=null){
+      Global.out.println("sw $v1, ($sp)");
+      Global.out.println("add $sp, $sp, -4");
+    }
+
     //Empilo parametros
     if (param != null)
       Registros.empilarParametros(param, procedimiento);
@@ -673,7 +681,12 @@ class ASTInstFuncion extends ASTInst {
     //Desempilo Parametros
     if (param != null)
       Registros.desempilarParametros(procedimiento);
-    
+   
+    //Aumento el tamaño del apuntador 
+    if (procedimiento.retType != null) {
+      Global.out.println("add $sp, $sp, 4");
+    }
+
     //Restauro Registros
     Global.out.println(Registros.restaurarRegistrosLlamador(pr));
 
@@ -706,9 +719,13 @@ class ASTInstReturn extends ASTInst{
 
   boolean toCode(int pr, int prf, String p){
     String reg = Registros.T[pr % Registros.maxT];
+    String reg2 = Registros.T[pr + 1 % Registros.maxT];
     exp.toCode(pr, prf, p);
+    Global.out.println("lw "+reg2+", " + retParam + "($fp)");
+    Global.out.println("sw "+reg+", (" + reg2 + ")");
+    Global.out.println("move $s1, "+reg+"");
     System.out.println(retParam);
-    Global.out.println("sw "+reg+", " + retParam + "($fp)");
+    
     Global.out.println("j " + p);
     return true;
   }

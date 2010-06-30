@@ -20,6 +20,7 @@ Funciones viejas modificadas
 
 Modificaciones que faltan
 
+* Cada parametro que deba ser pasado como referencia, debe ser lvalue.
 * Chequeo dinamicos de struct
 * Chequeo de que la llamada a funcion tenga la cantidad de parametros correctos
 * Retornar valores del procedimiento.
