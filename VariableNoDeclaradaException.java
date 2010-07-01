@@ -5,6 +5,20 @@ class VariableNoDeclaradaException extends Exception {
   }
 }
 
+class FuncionVoidConReturnException extends Exception {
+  FuncionVoidConReturnException (String var,int linea,int columna){
+    super("La funcion "+var+" en la linea "+linea+" en la columna "+columna+", ya se declaro como void y tiene un return.");
+  }
+
+}
+
+class FuncionNoVoidSinReturnException extends Exception {
+  FuncionNoVoidSinReturnException (String var,int linea,int columna){
+    super("La funcion "+var+" en la linea "+linea+" en la columna "+columna+", ya que la ultima instruccion de la funcion no es un return.");
+  }
+
+}
+
 class ParametrosException extends Exception {
   
   ParametrosException (String var,int linea,int columna){

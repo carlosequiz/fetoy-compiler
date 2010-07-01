@@ -138,7 +138,7 @@ non terminal declaracion multdeclar1;
 non terminal ASTInstAsig asignacion;
 non terminal ASTInstAsig asignacionRara;
 non terminal bloque;
-non terminal bloqueb;
+non terminal Boolean[] bloqueb;
 non terminal declaraciones;
 non terminal procedimiento;
 non terminal LinkedList param;
@@ -160,8 +160,8 @@ non terminal LinkedList dec;
 non terminal ASTInstAsig asig;
 non terminal switche;
 non terminal LinkedList case;
-non terminal stmtsb;
-non terminal stmtb;
+non terminal Boolean[] stmtsb;
+non terminal Boolean stmtb;
 non terminal LinkedList iniarray;
 non terminal llamadafuncion;
 non terminal LinkedList parame;
@@ -240,16 +240,29 @@ declaraciones ::= declaraciones declaracion PYC
 |  
 ;
 
-procedimiento ::= procedimiento:v1 SUB tipoP:v2 ID:v3 {:parser.tablaVar= new SymTable(parser.tablaVar); :} LPAREN param:v4 RPAREN bloqueb:v5 
-                                                     {:
-                                                        Proc a = new Proc(v3,v2,v4, parser.bloque);
-                                                        if (parser.promesas.equals(v3,a)){
-                                                          parser.principal.add(v3,a);
-                                                          parser.funciones.add(v3,a);
-                                                        } else
-                                                          throw new FuncionNoDeclaradaException(v3, parser.scanner.linea(), parser.scanner.columna());
-                                                        parser.bloque = parser.bloque.padre;
-                                                      :} 
+procedimiento ::= procedimiento:v1 
+                  SUB 
+                  tipoP:v2 
+                  ID:v3 {:parser.tablaVar= new SymTable(parser.tablaVar); :} 
+                  LPAREN 
+                  param:v4 
+                  RPAREN 
+                  bloqueb:v5 
+                    {:if (v2.isVoid()){
+                        if (v5[0])
+                          throw new FuncionVoidConReturnException(v3,parser.scanner.linea(),parser.scanner.columna());
+                      }else{
+                        if (!v5[1])
+                          throw new FuncionNoVoidSinReturnException(v3,parser.scanner.linea(),parser.scanner.columna());
+                      }
+                      Proc a = new Proc(v3,v2,v4, parser.bloque);
+                      if (parser.promesas.equals(v3,a)){
+                        parser.principal.add(v3,a);
+                        parser.funciones.add(v3,a);
+                      } else
+                        throw new FuncionNoDeclaradaException(v3, parser.scanner.linea(), parser.scanner.columna());
+                      parser.bloque = parser.bloque.padre;
+                     :}
 |
 ;
 
@@ -309,9 +322,10 @@ bloque ::=LLLAVE {: parser.bloque = new ASTInstBloque(parser.bloque);
 ;
 
 bloqueb ::=LLLAVE {: parser.bloque = new ASTInstBloque(parser.bloque); 
-                  :} stmtsb RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
-                                       parser.tablaVar = parser.tablaVar.prev ; 
-                                    :}
+                  :} stmtsb:v1 RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
+                                          parser.tablaVar = parser.tablaVar.prev ; 
+                                          RESULT = v1;
+                                        :}
 ;
 
 bloqueR ::=LLLAVE   stmtsRS RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
@@ -456,24 +470,32 @@ stmts ::= stmts:v1 stmt:v2 PYC  {: RESULT = v1 ; if (v2 != null) { RESULT.add(v2
                                 :}
 ;
 
-stmtsb ::= stmtsb stmtb PYC
-| stmtb PYC
+/*Esta funcion devuelve un arreglo de Bool de dos elementos, el primero indica si la funcion tiene
+un return o no, y el segundo indica si la ultima instruccion es un return
+*/
+stmtsb ::= stmtsb:v1 stmtb:v2 PYC {:RESULT = v1;
+                                    RESULT[0] = RESULT[0] || v2;
+                                    RESULT[1] = v2;
+                                  :}
+| stmtb:v1 PYC {: RESULT = new Boolean[2];
+                  RESULT[0]=v1;
+                  RESULT[1]=v1; :}
 ;
 
-//POR QUE SOLO RETURN??
-stmtb ::= RETURN
-| RETURN expr:v1 {: 
+/* Devuelve un booleano que indica si la instruccion es RETURN o no */
+stmtb ::=  RETURN expr:v1 
+                  {:
                     ASTInstReturn ir = new ASTInstReturn(v1);
                     ir.retParam = parser.tablaVar.retParam();
-                    System.out.println(parser.tablaVar.tamParam());
+                    //System.out.println(parser.tablaVar.tamParam());
                     parser.bloque.add(ir); 
-                    //RESULT = ir;
+                    RESULT = true;
                   :} 
-| RETURN CHAR:v1 {: 
-                    ASTInstReturn ir = new ASTInstReturn(new ASTExprCharCtte(v1.toCharArray()[0]));
+| RETURN CHAR:v1 {:ASTInstReturn ir = new ASTInstReturn(new ASTExprCharCtte(v1.toCharArray()[0]));
                     parser.bloque.add(ir); 
+                    RESULT = true;
                   :}
-| stmt
+| stmt {: RESULT = false; :}
 ;
 
 stmt ::= asignacion             

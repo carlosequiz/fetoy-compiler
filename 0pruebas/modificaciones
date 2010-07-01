@@ -1,5 +1,6 @@
 Modificaciones que hemos hecho desde la entrega de semana 9.
 
+* Chequeo de que exista un return en el procedimiento cuando devuelva un parametro.
 * Chequeo de que la llamada a funcion tenga la cantidad de parametros correctos
 * Agregar el Break
 * Null pointer exception cuando inicializas variables globales
@@ -26,7 +27,6 @@ Modificaciones que faltan
 * Retornar valores del procedimiento.
 * Agregar lectura de Variables
 * Dejar de que imprima la linea vacia cuando llames a salvar y restaurar.
-* Chequeo de que exista un return en el procedimiento cuando devuelva un parametro.
 * Casteos de flotantes en el switch. Cuando comparas registros, debemos tomar en cuenta si la comparacion es de flotantes o enteros.
 * Chequear la compatibilidad de los arreglos(Casteos explicitos)
 * Cambiar algunas de las print que reflejan excepciones por excepciones
