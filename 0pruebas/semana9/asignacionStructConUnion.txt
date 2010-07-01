@@ -1,7 +1,21 @@
 {
   sub main {
-    struct { int x, int y, union int l {2: {int z}}} a;
-    struct { int x, int y, union int l {2: {int z}}} b;
+    struct { 
+      int x, 
+      int y, 
+      union int l 
+        {2: 
+          {int z}
+        }
+      } a;
+    struct {
+      int x,
+      int y,
+      union 
+        int l {
+          2: {int z}
+        }
+      } b;
     a.z = 2;
     a.y = 9; 
     b = a;

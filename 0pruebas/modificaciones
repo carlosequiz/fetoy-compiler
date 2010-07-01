@@ -9,7 +9,6 @@ Modificaciones que hemos hecho desde la entrega de semana 9.
 * Se pueden asignar arreglos y structs
 * Literales de Arreglos
 * Para cargar la direccion de un lvalue, usas el metodo cargaDireccion, y se deja en el toCode, el valor siempre. 
-  utfiyttufr
 Funciones viejas modificadas
 * funcion ahora es un proc.
 * addAll
