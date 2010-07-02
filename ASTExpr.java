@@ -870,29 +870,8 @@ class ASTExprStructElem extends ASTExprLValue {
     Global.out.println(Registros.salvar(pr+1));
     Global.out.println(Registros.salvar(pr+2));
 
-    //Cargar el valor del discriminante
-    /*Suponiendo que el discriminante es entero. 
-      ASTTipoStruct tipoS = ((ASTTipoStruct) lvalue.getTip());
-      structUnion su = tipoS.union;
-      info i = tipoS.find(su.discriminante);
-      Global.out.println("li "+ reg2 + "," + i.desp);
-
-      int i = 0;
-      for (Enumeration e = su.moreST.keys(); e.hasMoreElements();){
-      Global.out.println("carga: ");
-      Global.out.println("li "+ reg3 + "," + e.nextElement());
-      Global.out.println("bneq "+ reg2 + "," + reg3 + ", branch" + (i+1));
-
-      Global.out.println("j carga");
-      i++;
-      }
-
-      Global.out.println("li "+ reg2 + "," + inf.desp);
-      Global.out.println("li "+ reg3 + "," + su.tam);
-      Global.out.println("beq "+ reg2 + "," + reg3);
-
-      Global.out.println("carga: ");
-      */
+    //Chequeo dinamico del union
+ 
     //Cargo el desplazamiento del atributo
     Global.out.println("li "+ reg2 + "," + inf.desp);
 
@@ -927,7 +906,7 @@ class ASTExprStructElem extends ASTExprLValue {
   }
 }
 
-class ASTExprFun extends ASTExpr {
+class ASTExprFun extends ASTExprLValue {
   ASTInst ai;
   ASTTipo tipo;
 
@@ -952,5 +931,22 @@ class ASTExprFun extends ASTExpr {
   boolean Id(){
     return false;
   }
+
+  void cargaDireccion(int pr, int prf, String a) {
+    String reg = Registros.T[pr % Registros.maxT];
+    ai.toCode(pr, prf, a, "fin");
+    Global.out.println("add $sp, $sp, 4");
+    Global.out.println("la " +reg +", ($sp)");
+    Global.out.println("la $s2, ($sp)");
+  }
+
+  info getInfo(){
+    return null;
+  }
+
+  String getId(){
+    return null;
+  }
+
 
 }

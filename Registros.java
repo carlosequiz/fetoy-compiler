@@ -80,7 +80,10 @@ public class Registros {
     //Necesito el reverso para empilarlo como lo dice el desp asignado.
     ArrayList al = new ArrayList();
     for  (Enumeration a = procedimiento.cuerpo.t.table.keys(); a.hasMoreElements() ; i++){
-      al.add(a.nextElement());
+      String next = (String) a.nextElement();
+      if (((info)procedimiento.cuerpo.t.find(next)).onparam){
+        al.add(next);
+      }
     }
     Collections.reverse(al);
 
@@ -114,6 +117,7 @@ public class Registros {
 
     // Depende de si es un tipo compuesto o no.
     if (!paramFormal.obj.isTipoCompuesto()){
+      System.out.println(paramReal);
       paramReal.toCode(1, 1, "algo");
       Global.out.println("sw " + reg2 + ", ( "+ reg  + ")");
       Global.out.println("add "+ reg + ", "+ reg + ", -" + 4);
@@ -130,7 +134,7 @@ public class Registros {
       Global.out.println("sw " + reg3 + ", (" + reg + ")");
       
       //Se va copiando uno a uno cada elemento
-      for (int cont = 4; cont < tamano; cont += 4){
+      for (int cont = 0; cont < tamano; cont += 4){
         Global.out.println("add " + reg + ", "+ reg +", -" + 4);
         Global.out.println("add " + reg2 + ", "+ reg2 +", -" + 4);
         Global.out.println("lw " + reg3 + ", (" + reg2 + ")");

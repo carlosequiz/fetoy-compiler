@@ -84,7 +84,7 @@ class SymTable {
   }
 
   int retParam(){
-    return 8 + tamParam();
+    return 12 + tamParam();
   }
 
   int tamParam(){

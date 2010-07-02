@@ -1,12 +1,13 @@
-sub int fun();
+sub int[1] fun(int);
 {
-  sub int fun(){
-    return 3;
+  sub int[1] fun(int x){
+    int[1] result = [1];
+    return result;
   }
 
   sub main {
-    int f = 4;
-    f = fun();
-    print(f);
+    int[1] f;
+    f = fun(2);
+    print(f[0]);
   }
 }

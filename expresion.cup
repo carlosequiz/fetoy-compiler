@@ -203,8 +203,8 @@ inicial ::=  promesas LLLAVE {:parser.bloque = new ASTInstBloque(null); :}
     procedimiento principal procedimiento RLLAVE 
             {:if(!parser.funciones.equals(parser.promesas))
                 throw new PromesaNoDeclaradaException(parser.scanner.linea(), parser.scanner.columna());
-              System.out.println(parser.principal);
-              //parser.principal.toCode(0,0);
+              //System.out.println(parser.principal);
+              parser.principal.toCode(0,0);
             :}
 ;
 
@@ -249,10 +249,10 @@ procedimiento ::= procedimiento:v1
                   RPAREN 
                   bloqueb:v5 
                     {:if (v2.isVoid()){
-                        if (v5[0])
+                        if (v5[0].booleanValue())
                           throw new FuncionVoidConReturnException(v3,parser.scanner.linea(),parser.scanner.columna());
                       }else{
-                        if (!v5[1])
+                        if (!v5[1].booleanValue())
                           throw new FuncionNoVoidSinReturnException(v3,parser.scanner.linea(),parser.scanner.columna());
                       }
                       Proc a = new Proc(v3,v2,v4, parser.bloque);
@@ -473,13 +473,15 @@ stmts ::= stmts:v1 stmt:v2 PYC  {: RESULT = v1 ; if (v2 != null) { RESULT.add(v2
 /*Esta funcion devuelve un arreglo de Bool de dos elementos, el primero indica si la funcion tiene
 un return o no, y el segundo indica si la ultima instruccion es un return
 */
-stmtsb ::= stmtsb:v1 stmtb:v2 PYC {:RESULT = v1;
-                                    RESULT[0] = RESULT[0] || v2;
+stmtsb ::= stmtsb:v1 stmtb:v2 PYC {:
+                                    RESULT = v1;
+                                    RESULT[0] = new Boolean(RESULT[0].booleanValue() || v2.booleanValue());
                                     RESULT[1] = v2;
                                   :}
 | stmtb:v1 PYC {: RESULT = new Boolean[2];
                   RESULT[0]=v1;
-                  RESULT[1]=v1; :}
+                  RESULT[1]=v1; 
+              :}
 ;
 
 /* Devuelve un booleano que indica si la instruccion es RETURN o no */
@@ -489,13 +491,13 @@ stmtb ::=  RETURN expr:v1
                     ir.retParam = parser.tablaVar.retParam();
                     //System.out.println(parser.tablaVar.tamParam());
                     parser.bloque.add(ir); 
-                    RESULT = true;
+                    RESULT = new Boolean(true);
                   :} 
 | RETURN CHAR:v1 {:ASTInstReturn ir = new ASTInstReturn(new ASTExprCharCtte(v1.toCharArray()[0]));
                     parser.bloque.add(ir); 
-                    RESULT = true;
+                    RESULT = new Boolean(true);
                   :}
-| stmt {: RESULT = false; :}
+| stmt {: RESULT = new Boolean(false); :}
 ;
 
 stmt ::= asignacion             

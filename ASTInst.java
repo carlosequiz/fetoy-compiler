@@ -115,7 +115,7 @@ class ASTInstAsigExp extends ASTInstAsig {
         
         Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
         Global.out.println("sw " + reg3 + ", (" + reg + ")");
-        for (int cont = 4; cont < tamano; cont += 4){
+        for (int cont = 0; cont < tamano; cont += 4){
           Global.out.println("add " + reg + ", "+ reg +", " + 4);
           Global.out.println("add " + reg2 + ", "+ reg2 +", " + 4);
           Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
@@ -690,7 +690,7 @@ class ASTInstFuncion extends ASTInst {
     }
 
     //Empilo parametros
-    if (param != null)
+    if (param.size() != 0)
       Registros.empilarParametros(param, procedimiento);
 
     //llamo Al otro procedimiento Guardo la dirección de retorno
@@ -701,7 +701,7 @@ class ASTInstFuncion extends ASTInst {
     Global.out.println("lw $ra, ($sp)");
     
     //Desempilo Parametros
-    if (param != null)
+    if (param.size() != 0)
       Registros.desempilarParametros(procedimiento);
    
     //Aumento el tamaño del apuntador 
@@ -742,11 +742,29 @@ class ASTInstReturn extends ASTInst{
   boolean toCode(int pr, int prf, String p,String jumpBreak){
     String reg = Registros.T[pr % Registros.maxT];
     String reg2 = Registros.T[pr + 1 % Registros.maxT];
-    exp.toCode(pr, prf, p);
-    Global.out.println("lw "+reg2+", " + retParam + "($fp)");
-    Global.out.println("sw "+reg+", (" + reg2 + ")");
-    Global.out.println("move $s1, "+reg+"");
-    System.out.println(retParam);
+    Global.out.println("lw "+reg+", " + retParam + "($fp)");
+    
+    // Depende de si es un tipo compuesto o no.
+    if (!exp.getTip().isTipoCompuesto()){
+      exp.toCode(pr+1, prf+1, p);
+      Global.out.println("sw " + reg2 + ", ( "+ reg  + ")");
+    } else {
+      String reg3 = Registros.T[pr + 2 % Registros.maxT];
+      int tamano = exp.getTip().tam;
+      ((ASTExprLValue) exp).cargaDireccion(pr+1, prf+1, "algo");
+
+      //Se inicializa en el ultimo elemento
+      Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
+      Global.out.println("sw " + reg3 + ", (" + reg + ")");
+      
+      //Se va copiando uno a uno cada elemento
+      for (int cont = 0; cont < tamano; cont += 4){
+        Global.out.println("add " + reg + ", "+ reg +", " + 4);
+        Global.out.println("add " + reg2 + ", "+ reg2 +", " + 4);
+        Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
+        Global.out.println("sw " + reg3 + ", (" + reg + ")");
+      }
+    }
     
     Global.out.println("j " + p);
     return true;
