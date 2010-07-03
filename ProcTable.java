@@ -29,7 +29,7 @@ public class ProcTable {
     return table.containsKey(a);
   }
 
-  boolean param(String fun,LinkedList param){
+  boolean param(String fun, LinkedList param){
     if (!table.containsKey(fun))
       return false;
     LinkedList paramFun = ((Proc) table.get(fun)).getParam();
@@ -140,6 +140,7 @@ class Proc {
 
     //Retornar
     Global.out.println("jr $ra");
+
   }
 
 }

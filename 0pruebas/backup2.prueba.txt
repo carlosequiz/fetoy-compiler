@@ -1,13 +1,14 @@
-sub int[1] fun(int);
+sub int[3] fun(int, int[2]);
 {
-  sub int[1] fun(int x){
-    int[1] result = [1];
+  sub int[3] fun(int l, int[2] z){
+    int[3] result = [z[0],z[1],l];
     return result;
   }
 
   sub main {
-    int[1] f;
-    f = fun(2);
-    print(f[0]);
+    int[3] f;
+    int[2] r = [1,2];
+    f = fun(3, r);
+    print(f[2]);
   }
 }

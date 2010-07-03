@@ -688,7 +688,7 @@ class ASTExprArrayElem extends ASTExprLValue {
     Global.out.println("blez " + reg3 + ", " + Global.error);
 
     //Operacion de Indice 
-    Global.out.println("li " + reg3 +", "+ ((ASTTipoArray)lvalue.getTip()).subclass.tam);
+    Global.out.println("li " + reg3 +", -"+ ((ASTTipoArray)lvalue.getTip()).subclass.tam);
     Global.out.println("mul " + reg2 +", "+reg2+", " + reg3);
 
     Global.out.println(Registros.restaurar(pr+2));
@@ -922,7 +922,7 @@ class ASTExprFun extends ASTExprLValue {
   boolean toCode(int pr, int prf, String proxI){
     String reg = Registros.T[pr % Registros.maxT];
     ai.toCode(pr, prf, proxI,"fin");
-    Global.out.println("add $sp, $sp, 4");
+    Global.out.println("add $sp, $sp, " + tipo.tam);
     Global.out.println("lw " +reg +", ($sp)");
     
     return false;
@@ -935,9 +935,8 @@ class ASTExprFun extends ASTExprLValue {
   void cargaDireccion(int pr, int prf, String a) {
     String reg = Registros.T[pr % Registros.maxT];
     ai.toCode(pr, prf, a, "fin");
-    Global.out.println("add $sp, $sp, 4");
+    Global.out.println("add $sp, $sp, " + tipo.tam);
     Global.out.println("la " +reg +", ($sp)");
-    Global.out.println("la $s2, ($sp)");
   }
 
   info getInfo(){

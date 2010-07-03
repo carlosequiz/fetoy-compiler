@@ -69,8 +69,7 @@ public class Registros {
     if (pr > maxT)
       for (int i = 0; i < T.length; result += " add $sp, $sp, 4\nlw "+ T[i++ % maxT] +", 0($sp)\n");
     else 
-      for (int i = 0; i < pr; result += "add $sp, $sp, 4\nlw "+ T[i++ % maxT] +", 0($sp)\n ");
-
+      for (int i = 0; i < pr; result += " add $sp, $sp, 4\nlw "+ T[i++ % maxT] +", 0($sp)\n");
     return result;
   };
 
@@ -134,14 +133,14 @@ public class Registros {
       Global.out.println("sw " + reg3 + ", (" + reg + ")");
       
       //Se va copiando uno a uno cada elemento
-      for (int cont = 0; cont < tamano; cont += 4){
+      for (int cont = 4; cont < tamano; cont += 4){
         Global.out.println("add " + reg + ", "+ reg +", -" + 4);
         Global.out.println("add " + reg2 + ", "+ reg2 +", -" + 4);
         Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
         Global.out.println("sw " + reg3 + ", (" + reg + ")");
       }
     }
-
+    System.out.println(paramFormal);
     //Se actualiza finalmente el sp.
     Global.out.println("add $sp, $sp, -" + paramFormal.obj.tam);
   }
@@ -155,15 +154,24 @@ public class Registros {
   }
 
   static void desempilarParametros(Proc procedimiento){
-    //Solo empilando por valor
-    int i = 0;
-    for  (Enumeration a = procedimiento.cuerpo.t.table.keys(); a.hasMoreElements() ; i++){
+    //Necesito el reverso para empilarlo como lo dice el desp asignado.
+    ArrayList al = new ArrayList();
+    for  (Enumeration a = procedimiento.cuerpo.t.table.keys(); a.hasMoreElements() ; ){
+      String next = (String) a.nextElement();
+      if (((info)procedimiento.cuerpo.t.find(next)).onparam){
+        al.add(next);
+      }
+    }
+    Collections.reverse(al);
+
+    for  (Enumeration a = Collections.enumeration(al); a.hasMoreElements() ; ){
       String elem = (String) a.nextElement();
       info paramFormal = procedimiento.cuerpo.t.find(elem);
       if (paramFormal.tipoParametro.equals("valor"))
         codigoDPVal(paramFormal);
-      else
+      else  
         codigoDPRef(paramFormal);
     }
+
   }
 }

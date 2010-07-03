@@ -115,9 +115,9 @@ class ASTInstAsigExp extends ASTInstAsig {
         
         Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
         Global.out.println("sw " + reg3 + ", (" + reg + ")");
-        for (int cont = 0; cont < tamano; cont += 4){
-          Global.out.println("add " + reg + ", "+ reg +", " + 4);
-          Global.out.println("add " + reg2 + ", "+ reg2 +", " + 4);
+        for (int cont = 4; cont < tamano; cont += 4){
+          Global.out.println("add " + reg + ", "+ reg +", -" + 4);
+          Global.out.println("add " + reg2 + ", "+ reg2 +", -" + 4);
           Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
           Global.out.println("sw " + reg3 + ", (" + reg + ")");
         }
@@ -712,11 +712,11 @@ class ASTInstFuncion extends ASTInst {
     //Restauro Registros
     Global.out.println(Registros.restaurarRegistrosLlamador(pr));
 
+
     return true;
   }
 
   tripleta tam(tripleta tr){
-    //System.out.println("Verificar la funcion tam de ASTInstFuncion");
     return tr;
   }
 }
@@ -758,9 +758,9 @@ class ASTInstReturn extends ASTInst{
       Global.out.println("sw " + reg3 + ", (" + reg + ")");
       
       //Se va copiando uno a uno cada elemento
-      for (int cont = 0; cont < tamano; cont += 4){
-        Global.out.println("add " + reg + ", "+ reg +", " + 4);
-        Global.out.println("add " + reg2 + ", "+ reg2 +", " + 4);
+      for (int cont = 4; cont < tamano; cont += 4){
+        Global.out.println("add " + reg + ", "+ reg +", -" + 4);
+        Global.out.println("add " + reg2 + ", "+ reg2 +", -" + 4);
         Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
         Global.out.println("sw " + reg3 + ", (" + reg + ")");
       }

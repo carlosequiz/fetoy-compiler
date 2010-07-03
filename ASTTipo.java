@@ -206,7 +206,7 @@ class ASTTipoArray extends ASTTipo{
       return false;  
   }
   public boolean isCompatible(ASTTipo t){
-    return false;
+    return this.equals(t);
   }
 
   public int getTam(){
@@ -318,7 +318,7 @@ class ASTTipoStruct extends ASTTipo{
   }
 
   public boolean isCompatible(ASTTipo t){
-    return false;
+    return this.equals(t);
   }
 
 }
