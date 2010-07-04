@@ -117,7 +117,12 @@ public class Registros {
     // Depende de si es un tipo compuesto o no.
     if (!paramFormal.obj.isTipoCompuesto()){
       paramReal.toCode(1, 1, "algo");
-      Global.out.println("sw " + reg2 + ", ( "+ reg  + ")");
+      if (paramFormal.obj.isFloat()){
+        reg2 = F[1];
+        Global.out.println("s.s " + reg2 + ", ( "+ reg  + ")");
+      } else {
+        Global.out.println("sw " + reg2 + ", ( "+ reg  + ")");
+      }
     } else {
       //Se guardan los valores al reves, se comienza desde el final y se van copiando uno por uno.
       String reg3 = T[2];
