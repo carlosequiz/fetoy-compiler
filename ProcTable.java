@@ -140,7 +140,7 @@ class Proc {
 
     //Retornar
     Global.out.println("jr $ra");
-
+    System.out.println(cuerpo.t);
   }
 
 }

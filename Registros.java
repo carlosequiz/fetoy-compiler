@@ -116,10 +116,8 @@ public class Registros {
 
     // Depende de si es un tipo compuesto o no.
     if (!paramFormal.obj.isTipoCompuesto()){
-      System.out.println(paramReal);
       paramReal.toCode(1, 1, "algo");
       Global.out.println("sw " + reg2 + ", ( "+ reg  + ")");
-      Global.out.println("add "+ reg + ", "+ reg + ", -" + 4);
     } else {
       //Se guardan los valores al reves, se comienza desde el final y se van copiando uno por uno.
       String reg3 = T[2];
@@ -127,8 +125,6 @@ public class Registros {
       ((ASTExprLValue) paramReal).cargaDireccion(1, 1, "algo");
 
       //Se inicializa en el ultimo elemento
-      Global.out.println("add " + reg2 + ", "+ reg2 +", " + paramFormal.obj.tam);
-      Global.out.println("add " + reg2 + ", "+ reg2 +", -4");
       Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
       Global.out.println("sw " + reg3 + ", (" + reg + ")");
       
@@ -140,9 +136,9 @@ public class Registros {
         Global.out.println("sw " + reg3 + ", (" + reg + ")");
       }
     }
-    System.out.println(paramFormal);
     //Se actualiza finalmente el sp.
     Global.out.println("add $sp, $sp, -" + paramFormal.obj.tam);
+    Global.out.println("add "+ reg + ", "+ reg + ", -" + 4);
   }
 
   static void codigoDPRef(info e){

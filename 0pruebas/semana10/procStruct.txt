@@ -1,6 +1,6 @@
 sub void fun(struct {int x, int y}, int);
 {
-  sub void fun(struct {int x, int y} t, int f){
+  sub void fun(ref struct {int x, int y} t, int f){
     print(t.y);
   }
 

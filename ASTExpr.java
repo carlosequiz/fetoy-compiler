@@ -873,7 +873,7 @@ class ASTExprStructElem extends ASTExprLValue {
     //Chequeo dinamico del union
  
     //Cargo el desplazamiento del atributo
-    Global.out.println("li "+ reg2 + "," + inf.desp);
+    Global.out.println("li "+ reg2 + ",-" + inf.desp);
 
     //Carga la direccion del lvalue
     Global.out.println("add "+ reg + "," + reg + "," +reg2);

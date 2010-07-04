@@ -1,14 +1,21 @@
-sub int[3] fun(int, int[2]);
+sub struct {int n, int m} fun(int, int[2], int);
 {
-  sub int[3] fun(int l, int[2] z){
-    int[3] result = [z[0],z[1],l];
+  sub struct {int n, int m} fun(int d, ref int[2] z, int l){
+    l = 2;
+    z[0] = 2;
+    struct {int n, int m} result;
+    result.n = z[0] - d;
+    result.m = z[1] - l;
     return result;
   }
 
   sub main {
-    int[3] f;
-    int[2] r = [1,2];
-    f = fun(3, r);
-    print(f[2]);
+    int z = 4;
+    struct {int n, int m} f;
+    int[2] r = [8,3];
+    f = fun(1, r, z);
+    print(f.n);
+    print(f.m);
+    print(r[0]);
   }
 }
