@@ -29,14 +29,20 @@ public class ProcTable {
     return table.containsKey(a);
   }
 
+  //Chequea que la llamada a una funcion es correcta
   boolean param(String fun, LinkedList param){
     if (!table.containsKey(fun))
       return false;
     LinkedList paramFun = ((Proc) table.get(fun)).getParam();
+
+    //Chequeo de que la cantidad de parametros de la funcion es distinto.
     if (param.size() != paramFun.size())
       return false;
+
     for (int i = 0; i < paramFun.size();i++){
-      if (!((ASTExpr) param.get(i)).getTip().isCompatible((ASTTipo) paramFun.get(i)))
+      ASTExpr paramReal = (ASTExpr) param.get(i);
+      //Chequeo de que los tipos son incompatibles
+      if (!(paramReal.getTip().isCompatible((ASTTipo) paramFun.get(i))))
         return false;
     }
     return true;
@@ -68,7 +74,6 @@ class Proc {
   ASTTipo retType;
   LinkedList param;
   ASTInstBloque cuerpo;
-  SymTable st;
   int retParam;
 
 
@@ -103,6 +108,7 @@ class Proc {
   ASTTipo ret(){
     return retType;
   }
+  
   void print(){
     if (param != null)
       System.out.println(param);
@@ -140,7 +146,17 @@ class Proc {
 
     //Retornar
     Global.out.println("jr $ra");
-    System.out.println(cuerpo.t);
+  }
+
+  //Se supone que se chequeo antes la llamada de la funcion tuviera los parametros correctos
+  boolean checkParameterForLValues(LinkedList paramReales) {
+    int i = 0;
+    for  (Enumeration a = cuerpo.t.table.elements(); a.hasMoreElements() ; i++){
+      ASTExpr paramReal = (ASTExpr) paramReales.get(i);
+      if (((info)a.nextElement()).tipoParametro.equals("ref") && !(paramReal instanceof ASTExprLValue))
+        return false;
+    }
+    return true;
   }
 
 }

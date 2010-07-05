@@ -26,6 +26,15 @@ class ParametrosException extends Exception {
   }
 }
 
+class NotLValuesException  extends Exception {
+  
+  NotLValuesException (String var, int linea,int columna){
+    super("Error en la llamada a la funcion "+var+" en la linea "+linea+" en la columna "+columna+", problemas con los parametros.");
+  }
+}
+
+
+
 class SwitchException extends Exception {
 
   SwitchException(int linea, int columna){

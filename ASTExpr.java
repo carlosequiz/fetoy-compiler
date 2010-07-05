@@ -79,8 +79,7 @@ class ASTExprAritBin extends ASTExprArit {
     if (izqa.getTip().isFloat() && dera.getTip().isEntero()){
       this.izq = izqa;
       this.der = new ASTExprCast(dera, new ASTTipoFloat());
-    }
-    if (izqa.getTip().isEntero() && dera.getTip().isFloat()){
+    } else if (izqa.getTip().isEntero() && dera.getTip().isFloat()){
       this.der = dera;
       this.izq = new ASTExprCast(izqa, new ASTTipoFloat());
     }
@@ -88,7 +87,6 @@ class ASTExprAritBin extends ASTExprArit {
       this.izq = izqa;
       this.der = dera;
     }
-
     //Setea el tipo de la expresión binaria
     this.tipo = this.izq.getTip(); 
   }
@@ -470,7 +468,9 @@ class ASTExprBoolBinChar extends ASTExprBool { ASTExpr izq; ASTExpr der;
 }
 
 
-abstract class ASTExprString extends ASTExpr { }
+abstract class ASTExprString extends ASTExpr {
+  String etiqueta;
+}
 
 // Chequear que ambos sean string
 class ASTExprStringBin extends ASTExprString{ 
@@ -480,11 +480,22 @@ class ASTExprStringBin extends ASTExprString{
   //@ invariant izq!=null; @ invariant der!=null; @ invariant tipo!=null;
 
   //@requires izqa!=null && dera!=null;
-  ASTExprStringBin( ASTExpr izqa, ASTExpr dera){ 
+  ASTExprStringBin(String e, ASTExpr izqa, ASTExpr dera){ 
+    this.etiqueta = e;
     this.izq = izqa; 
-    this.der = dera; 
+    this.der = dera;
+     
     this.tipo = new ASTTipoString(); 
   }
+
+  //Sin etiqueta
+  ASTExprStringBin(ASTExpr izqa, ASTExpr dera){ 
+    this.izq = izqa; 
+    this.der = dera;
+     
+    this.tipo = new ASTTipoString(); 
+  }
+
 
   public /*@ non_null @*/ String toString(){ return "+\n "+izq+" "+der; }
 
@@ -503,11 +514,19 @@ class ASTExprStringCtte extends ASTExprString {
   ASTTipo tipo;
   //@ invariant tipo!=null;
 
-  ASTExprStringCtte(String a){ ctte = a; this.tipo = new ASTTipoString(); }
+  ASTExprStringCtte(String label, String a){ 
+    ctte = a;
+    etiqueta = label; 
+    this.tipo = new ASTTipoString(); 
+  }
 
-  public /*@ non_null @*/ String toString(){ return ctte; }
+  public /*@ non_null @*/ String toString(){ 
+    return ctte; 
+  }
 
-  boolean Id(){ return false; }
+  boolean Id(){ 
+    return false; 
+  }
 
   ASTTipo getTip(){
     return tipo;
@@ -516,7 +535,6 @@ class ASTExprStringCtte extends ASTExprString {
   boolean toCode(int pr, int prf, String a){
     return false;
   }
-
 }
 
 abstract class ASTExprChar extends ASTExpr{

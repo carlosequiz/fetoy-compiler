@@ -7,6 +7,7 @@ class Global{
   static int plac;
   static int proxEtiqueta = 0;
   static int proxEtiquetaBreak = 0;
+  static int proxMensaje = 0;
   static String error = "error";
 
   static String nuevaEtiqueta(){
@@ -14,5 +15,8 @@ class Global{
   }
   static String nuevaEtiquetaBreak(){
     return "break" + proxEtiquetaBreak++;
+  }
+  static String nuevoMensaje(){
+    return "msj" + proxMensaje++;
   }
 }

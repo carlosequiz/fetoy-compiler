@@ -21,7 +21,6 @@ class ASTInstImprime extends ASTInst {
     expr = e;
   }
 
-  // Tratando de arreglar el indice de los arreglos, pero sin éxito.
   //@ requires pr % Registros.maxT > 0; 
   //@ requires prf % Registros.maxF > 0; 
   //@ requires Global.out != null; 
@@ -30,18 +29,64 @@ class ASTInstImprime extends ASTInst {
     String regF = Registros.F[prf % Registros.maxF];
     ASTTipo tipo = expr.getTip();
 
-    expr.toCode(pr,prf,proxI);
 
     //Recibe lo que este en result, y lo imprime de acuerdo al tipo
     if (tipo != null)
       if (tipo.isEntero()){
+        expr.toCode(pr,prf,proxI);
         Global.out.println("li $v0, 1");
         Global.out.println("move $a0, " + reg);
         Global.out.println("syscall");
       } else if  (tipo.isFloat()){
+        expr.toCode(pr,prf,proxI);
         Global.out.println("li $v0, 2");
         Global.out.println("mov.s $f12, " + regF);
         Global.out.println("syscall");
+      } else if  (tipo.isBool()){
+      } else if  (tipo.isChar()){
+      } else if  (tipo.isString()){
+        Global.out.println("li $v0, 4");
+        Global.out.println("la $a0, " + ((ASTExprStringCtte) expr).etiqueta);
+        Global.out.println("syscall");
+      }
+
+    return false;
+  }
+
+  tripleta tam( tripleta tr){
+    return tr;
+  }
+}
+
+class ASTInstLee extends ASTInst {
+  ASTExpr expr;
+
+  //@invariant expr != null;
+
+  //@requires e != null;
+  ASTInstLee(ASTExpr e){
+    expr = e;
+  }
+
+  //@ requires pr % Registros.maxT > 0; 
+  //@ requires prf % Registros.maxF > 0; 
+  //@ requires Global.out != null; 
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
+    String reg = Registros.T[pr % Registros.maxT];
+    ASTTipo tipo = expr.getTip();
+
+    ((ASTExprLValue)expr).cargaDireccion(pr,prf,proxI);
+
+    //Recibe lo que este en result, y lo imprime de acuerdo al tipo
+    if (tipo != null)
+      if (tipo.isEntero()){
+        Global.out.println("li $v0, 5");
+        Global.out.println("syscall");
+        Global.out.println("sw $v0, ("+reg+")");
+      } else if  (tipo.isFloat()){
+        Global.out.println("li $v0, 6");
+        Global.out.println("syscall");
+        Global.out.println("s.s $f0, (" + reg + ")");
       } else if  (tipo.isBool()){
       } else if  (tipo.isChar()){
       } else if  (tipo.isString()){
@@ -56,6 +101,7 @@ class ASTInstImprime extends ASTInst {
     return tr;
   }
 }
+
 
 class ASTInstAsigExp extends ASTInstAsig {
   ASTExprLValue lvalue;

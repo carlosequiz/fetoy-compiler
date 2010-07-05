@@ -17,6 +17,8 @@ parser code {:
   Registros reg = new Registros();
   SymTable list_articles= new SymTable(null);
   LinkedList pila = new LinkedList();
+  Hashtable mensajes = new Hashtable();
+
   int SRegistros = 0;
   int MaxSRegistros = 7;
   int vg = 0;
@@ -121,6 +123,7 @@ terminal UNION;
 terminal TYPEDEF;
 terminal PUNTO;
 terminal PRINT;
+terminal READ;
 
 
 /* Non terminals */
@@ -177,6 +180,7 @@ non terminal structUnion lista_union;
 non terminal LinkedList parametros;
 non terminal ASTTipoStruct st;
 non terminal ASTInst imprime;
+non terminal ASTInst lee;
 non terminal seleccion1;
 non terminal switche1;
 non terminal LinkedList case1;
@@ -204,7 +208,7 @@ inicial ::=  promesas LLLAVE {:parser.bloque = new ASTInstBloque(null); :}
             {:if(!parser.funciones.equals(parser.promesas))
                 throw new PromesaNoDeclaradaException(parser.scanner.linea(), parser.scanner.columna());
               //System.out.println(parser.principal);
-              parser.principal.toCode(0,0);
+              parser.principal.toCode(0,0, parser.mensajes);
             :}
 ;
 
@@ -509,11 +513,17 @@ stmt ::= asignacion
 | llamadafuncion:v1 {:    parser.bloque.add((ASTInst) v1); :}
 | deftipo
 | imprime
+| lee
 ;
 
 imprime ::= PRINT LPAREN expr:v1 RPAREN {:
                                                 parser.bloque.add(new ASTInstImprime(v1)); 
-                                              
+                                        :}
+;
+
+
+lee ::= READ LPAREN expr:v1 RPAREN {:
+                                                parser.bloque.add(new ASTInstLee(v1)); 
                                         :}
 ;
 
@@ -531,17 +541,17 @@ llamadafuncion ::= ID:v1 LPAREN parame:v2 RPAREN
                                                     throw new FuncionNoDeclaradaException(v1,parser.scanner.linea(),parser.scanner.columna()); 
                                                   if (!parser.promesas.param(v1,v2))
                                                     throw new ParametrosException(v1,parser.scanner.linea(),parser.scanner.columna());
-                                                  String ret = parser.funciones.getRet(v1).toString(); 
-                                                  Proc procInfo = parser.funciones.get(v1);                                                 
+                                                  Proc procInfo = parser.funciones.get(v1);
+                                                  if (!procInfo.checkParameterForLValues(v2))
+                                                    throw new NotLValuesException(v1,parser.scanner.linea(),parser.scanner.columna());
                                                   ASTInstFuncion f1 = new ASTInstFuncion(v2, procInfo);
+                                                  //if (f1.checkLValues()){
+                                                    //throw new NotLValueException(v1,parser.scanner.linea(),parser.scanner.columna());
+                                                  //}
                                                   if (procInfo.retType.isVoid()){
                                                     RESULT = f1;
                                                   } else
                                                     RESULT = new ASTExprFun(procInfo.retType, f1); 
-                                                    System.out.println(procInfo.retType);
-                                                     
-                                                  //Por que si es void no se agrega la llamada a función?
-                                                  //if (!ret.equals("VOID"))
                                                 :} 
 ;
 
@@ -860,9 +870,14 @@ expr ::= expr:v1 PLUS expr:v3
                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
                                if (v1.getTip().isNumber()) 
                                   RESULT = new ASTExprAritBin("+", v1, v3);
-                               else if (v1.getTip().isString())
-                                  RESULT = new ASTExprStringBin((ASTExprString) v1,(ASTExprString) v3);
-
+                               else if (v1.getTip().isString()){
+                                  String msj = Global.nuevoMensaje(); 
+                                  String msj1 =(String) parser.mensajes.get(((ASTExprString)v1).etiqueta); 
+                                  String msj2 =(String) parser.mensajes.get(((ASTExprString)v3).etiqueta); 
+                                  parser.mensajes.put(msj, msj1 + msj2);
+ 
+                                  RESULT = new ASTExprStringBin(msj, (ASTExprString) v1,(ASTExprString) v3);
+                                }
                              :}
 
 |  expr:v1 TIMES expr:v3 
@@ -1042,7 +1057,7 @@ expr ::= expr:v1 PLUS expr:v3
 
 | TKFLOAT:v1 {: RESULT = new ASTExprAritCtteFloat( Float.valueOf(v1).floatValue()) ;:}
 
-| TKSTRING:v1 {: RESULT = new ASTExprStringCtte(v1);:}
+| TKSTRING:v1 {: String msj = Global.nuevoMensaje(); parser.mensajes.put(msj, v1); RESULT = new ASTExprStringCtte(msj, v1);:}
 
 | TRUE  {:RESULT = new ASTExprBoolCtte(true); :}
 

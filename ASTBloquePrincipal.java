@@ -42,10 +42,16 @@ class ASTBloquePrincipal {
   }
   
   //@ requires global != null && Global.out !=null && main != null;
-  void toCode(int pr, int prf){
+  void toCode(int pr, int prf, Hashtable mensajes){
     int i = global.tamG();
     Global.out.println(".data");
     Global.out.println("str1: .asciiz \"Error en los indices de los arreglos.\"");
+    for ( Enumeration a = mensajes.keys(); a.hasMoreElements() ;){
+      String msj = (String) a.nextElement();
+      Global.out.println(msj + ": .asciiz "+mensajes.get(msj));
+    }
+
+
     if (i != 0)
       Global.out.println("global: .space "+i);
     Global.out.println(".text");

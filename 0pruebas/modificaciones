@@ -1,33 +1,24 @@
-Modificaciones que hemos hecho desde la entrega de semana 9.
+Modificaciones que hemos hecho desde la entrega de semana 10.
 
-* Retornar valores del procedimiento(Todo usando enteros).
+
+* lectura de Variables enteras y flotantes
+* Chequeo de cada parametro que deba ser pasado como referencia, debe ser lvalue.
+* Retornar valores del procedimiento(Todo usando estructuras con atributos enteros, booleanos y flotantes).
 * Chequeo de que exista un return en el procedimiento cuando devuelva un parametro.
 * Chequeo de que la llamada a funcion tenga la cantidad de parametros correctos
 * Agregar el Break
 * Null pointer exception cuando inicializas variables globales
-* Procedimientos con pasaje de parametros por referencia 
-* Procedimientos con pasaje de parametros por valor
-* Procedimientos sin pasaje de parametros
-* Se pueden asignar arreglos y structs
-* Literales de Arreglos
-* Para cargar la direccion de un lvalue, usas el metodo cargaDireccion, y se deja en el toCode, el valor siempre. 
-Funciones viejas modificadas
-* funcion ahora es un proc.
-* addAll
-* Cambie el metodo en ASTBloque, para agregarle al principio los strings de error.
-* En expresion.cup, modifique el bloqueb, que estaba creando 2 veces la tabla de simbolos
-* Agregue a info parametros extra para saber si es pasaje por valor, el numero de parametro que es(Los hashtable pierden esa condicion).
-* Symtable, de pertenecer a la tabla de simbolos de una funcion, tiene un atributo que es la espacio usado por los parametros que contiene.
+
 
 ****************************
 
+
 Modificaciones que faltan
 
-* Hay pequeños problemas asignando booleanos
-* Cada parametro que deba ser pasado como referencia, debe ser lvalue.
 * Chequeo dinamicos de struct
-* Retornar valores del procedimiento(Struct y Arreglos que no todos los atributos sean enteros y flotantes).
-* Agregar lectura de Variables
+* Agregar lectura de Variables booleanas y caracteres
+* Faltan los print de caracteres y booleanos
+* Retornar valores del procedimiento de Struct y Arreglos que los atributos sean caracteres.
 * Dejar de que imprima la linea vacia cuando llames a salvar y restaurar.
 * Casteos de flotantes en el switch. Cuando comparas registros, debemos tomar en cuenta si la comparacion es de flotantes o enteros.
 * Chequear la compatibilidad de los arreglos(Casteos explicitos)

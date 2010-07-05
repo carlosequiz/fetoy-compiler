@@ -1,11 +1,5 @@
 {
   sub main {
-    bool b = false;
-    char n = 'c';
-    if ('d' == 'c'){
-      print(2);
-    } else {
-      print(3);
-    };
+    print("El valor \t de fibonacci\t de ");
   }
 }

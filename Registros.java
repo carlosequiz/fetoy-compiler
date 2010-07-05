@@ -89,7 +89,7 @@ public class Registros {
     String reg = T[0];
     Global.out.println("la " + reg + ", ($sp)");
 
-    for  (Enumeration a = Collections.enumeration(al); a.hasMoreElements() ; i++){
+    for (Enumeration a = Collections.enumeration(al); a.hasMoreElements() ; i++){
       String elem = (String) a.nextElement();
       info paramFormal = procedimiento.cuerpo.t.find(elem);
       if (paramFormal.tipoParametro.equals("valor"))

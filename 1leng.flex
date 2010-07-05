@@ -71,6 +71,7 @@ EndOfLineComment     = "//" [^\r\n]* {LineTerminator}
  
 %%
  
+<YYINITIAL> "read" 				{ return symbol(sym.READ);}
 <YYINITIAL> "print" 					{ return symbol(sym.PRINT);}
 <YYINITIAL> "return" 					{ return symbol(sym.RETURN);}
 <YYINITIAL> {Comment}  					    {/* ignore */}
