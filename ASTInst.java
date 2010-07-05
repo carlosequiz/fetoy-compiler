@@ -130,14 +130,13 @@ class ASTInstAsigExp extends ASTInstAsig {
         //Limpio todo el tamaño del union 
       //}
     } else {
-          lvalue.cargaDireccion(pr,prf, proxI);
-          Registros.salvar(pr + 1);
-          Registros.salvarF(prf + 1);
-          exp.toCode(pr + 1, prf+1, proxI);
-          lvalue.modifica(pr, prf);
-          Registros.restaurar(pr + 1);
-          Registros.restaurarF(prf + 1);
-        
+      lvalue.cargaDireccion(pr,prf, proxI);
+      Registros.salvar(pr + 1);
+      Registros.salvarF(prf + 1);
+      exp.toCode(pr + 1, prf+1, proxI);
+      lvalue.modifica(pr, prf);
+      Registros.restaurar(pr + 1);
+      Registros.restaurarF(prf + 1);
     }
 
     return false;

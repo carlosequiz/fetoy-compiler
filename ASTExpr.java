@@ -408,88 +408,116 @@ class ASTExprBoolBinBool extends ASTExprBool {
 class ASTExprBoolBinString extends ASTExprBool { ASTExpr izq; ASTExpr der;
   ASTTipo tipo;
 
-  //@ invariant izq!=null; @ invariant der!=null; @ invariant tipo!=null;
+  //@ invariant izq!=null; 
+  //@ invariant der!=null; 
+  //@ invariant tipo!=null;
 
   //@requires izqa!=null && dera!=null;
-  ASTExprBoolBinString ( ASTExpr izqa, ASTExpr dera ){ this.izq = izqa;
-    this.der = dera; this.tipo = new ASTTipoBool(); }
+  ASTExprBoolBinString ( ASTExpr izqa, ASTExpr dera ){ 
+    this.izq = izqa;
+    this.der = dera; 
+    this.tipo = new ASTTipoBool(); 
+  }
 
+  public  String toString(){ 
+    return " ==\n "+izq+" "+der; 
+  }
 
-    public  String toString(){ return " ==\n "+izq+" "+der; }
+  ASTTipo getTip(){ 
+    return tipo; 
+  }
 
-    ASTTipo getTip(){ return tipo; }
+  boolean Id(){ 
+    return izq instanceof ASTExprId || der instanceof ASTExprId || izq.Id() || der.Id(); 
+  }
 
-    boolean Id(){ return izq instanceof ASTExprId || der instanceof ASTExprId ||
-      izq.Id() || der.Id(); }
+  boolean toCode(int pr, int prf, String a){ return false; 
+  } 
+}
 
+class ASTExprBoolBinChar extends ASTExprBool { ASTExpr izq; ASTExpr der;
+  ASTTipo tipo;
+  String op;
 
-    boolean toCode(int pr, int prf, String a){ return false; } }
+  //@ invariant izq!=null; 
+  //@ invariant der!=null; 
+  //@ invariant tipo!=null;
 
-    class ASTExprBoolBinChar extends ASTExprBool { ASTExpr izq; ASTExpr der;
-      ASTTipo tipo;
+  //@requires izqa!=null && dera!=null;
+  ASTExprBoolBinChar ( String op, ASTExpr izqa, ASTExpr dera){ 
+    this.op = op;
+    this.izq = izqa; 
+    this.der = dera; 
+    this.tipo = new ASTTipoBool(); 
+  }
 
-      //@ invariant izq!=null; @ invariant der!=null; @ invariant tipo!=null;
+  public  String toString(){ return op + " ==\n "+izq+" "+der; }
 
-      //@requires izqa!=null && dera!=null;
-      ASTExprBoolBinChar ( ASTExpr izqa, ASTExpr dera){ this.izq = izqa; this.der =
-        dera; this.tipo = new ASTTipoBool(); }
+  ASTTipo getTip(){ return tipo; }
 
-      public  String toString(){ return " ==\n "+izq+" "+der; }
+  boolean Id(){ 
+    return izq instanceof ASTExprId || der instanceof ASTExprId || izq.Id() || der.Id(); 
+  }
 
-      ASTTipo getTip(){ return tipo; }
-
-      boolean Id(){ return izq instanceof ASTExprId || der instanceof ASTExprId ||
-        izq.Id() || der.Id(); }
-
-      boolean toCode(int pr, int prf, String a){ 
-        String actual= Registros.T[(pr) % Registros.maxT ]; 
-        Global.out.println(Registros.salvar(pr+1));
-        izq.toCode(pr,prf,a); der.toCode(pr+1,prf,a); 
-        Global.out.println("seq "+actual+" , "+actual+" , "+Registros.T[(pr+1)%Registros.maxT]);
-        Global.out.println(Registros.restaurar(pr+1)); 
-        return false; 
-      } 
-    }
+  boolean toCode(int pr, int prf, String a){ 
+    String actual= Registros.T[(pr) % Registros.maxT ]; 
+    Global.out.println(Registros.salvar(pr+1));
+    izq.toCode(pr,prf,a); der.toCode(pr+1,prf,a); 
+    Global.out.println("seq "+actual+" , "+actual+" , "+Registros.T[(pr+1)%Registros.maxT]);
+    Global.out.println(Registros.restaurar(pr+1)); 
+    return false; 
+  } 
+}
 
 
 abstract class ASTExprString extends ASTExpr { }
 
 // Chequear que ambos sean string
-class ASTExprStringBin extends ASTExprString{ ASTExpr izq; ASTExpr der; ASTTipo
-  tipo;
+class ASTExprStringBin extends ASTExprString{ 
+  ASTExpr izq; 
+  ASTExpr der; 
+  ASTTipo tipo;
   //@ invariant izq!=null; @ invariant der!=null; @ invariant tipo!=null;
 
   //@requires izqa!=null && dera!=null;
-  ASTExprStringBin( ASTExpr izqa, ASTExpr dera){ this.izq = izqa; this.der =
-    dera; this.tipo = new ASTTipoString(); }
+  ASTExprStringBin( ASTExpr izqa, ASTExpr dera){ 
+    this.izq = izqa; 
+    this.der = dera; 
+    this.tipo = new ASTTipoString(); 
+  }
 
   public /*@ non_null @*/ String toString(){ return "+\n "+izq+" "+der; }
 
   ASTTipo getTip(){ return tipo; }
 
-  boolean Id(){ return izq instanceof ASTExprId || der instanceof ASTExprId ||
-    izq.Id() || der.Id(); }
-
-  boolean toCode(int pr, int prf, String a){ return false; } }
-
-  class ASTExprStringCtte extends ASTExprString { String ctte; ASTTipo tipo;
-    //@ invariant tipo!=null;
-
-    ASTExprStringCtte(String a){ ctte = a; this.tipo = new ASTTipoString(); }
-
-    public /*@ non_null @*/ String toString(){ return ctte; }
-
-    boolean Id(){ return false; }
-
-    ASTTipo getTip(){
-      return tipo;
-    }
-
-    boolean toCode(int pr, int prf, String a){
-      return false;
-    }
-
+  boolean Id(){ 
+    return izq instanceof ASTExprId || der instanceof ASTExprId || izq.Id() || der.Id(); 
   }
+
+  boolean toCode(int pr, int prf, String a){ return false; 
+  } 
+}
+
+class ASTExprStringCtte extends ASTExprString { 
+  String ctte; 
+  ASTTipo tipo;
+  //@ invariant tipo!=null;
+
+  ASTExprStringCtte(String a){ ctte = a; this.tipo = new ASTTipoString(); }
+
+  public /*@ non_null @*/ String toString(){ return ctte; }
+
+  boolean Id(){ return false; }
+
+  ASTTipo getTip(){
+    return tipo;
+  }
+
+  boolean toCode(int pr, int prf, String a){
+    return false;
+  }
+
+}
 
 abstract class ASTExprChar extends ASTExpr{
 }
@@ -722,15 +750,14 @@ abstract class ASTExprLValue extends ASTExpr{
     if (this instanceof ASTExprLValue){ 
       if (this instanceof ASTExprId){ 
         if (!inf.onreg)
-          if (inf.obj.isEntero()){
-            Global.out.println("lw " + reg + ",(" + reg + ")" );
-          } else if  (inf.obj.isFloat()){
+          if  (inf.obj.isFloat()){
             Global.out.println("l.s " + regF + ",(" + reg + ")" );
-          }
-      } else if (t.isEntero()){
-        Global.out.println("lw " + reg + ",(" + reg + ")" );
+          } else
+            Global.out.println("lw " + reg + ",(" + reg + ")" );
       } else if (t.isFloat()){
         Global.out.println("l.s " + regF + ",(" + reg + ")" );
+      } else {
+        Global.out.println("lw " + reg + ",(" + reg + ")" );
       }
     }
   }
@@ -883,15 +910,16 @@ class ASTExprStructElem extends ASTExprLValue {
   //Modifica el valor en la referencia
   void modifica(int pr, int prf){
     String actual = Registros.T[pr % Registros.maxT], siguiente="", move = "", store ="";
-    if (tipo.isEntero()){
-      siguiente = Registros.T[(pr + 1) % Registros.maxT];
-      move = "move ";
-      store = "sw ";
-    } else if (tipo.isFloat()){
+       if (tipo.isFloat()){
       siguiente = Registros.F[(prf + 1) % Registros.maxF];
       move = "mov.s ";
       store = "s.s ";
-    }
+    } else {
+      siguiente = Registros.T[(pr + 1) % Registros.maxT];
+      move = "move ";
+      store = "sw ";
+    } 
+
 
     //Toma en cuenta Si la variable esta en el main o si esta en la pila
     Global.out.println(store + siguiente + ", ("+ actual + ")" );

@@ -328,7 +328,7 @@ bloqueb ::=LLLAVE {: parser.bloque = new ASTInstBloque(parser.bloque);
                                         :}
 ;
 
-bloqueR ::=LLLAVE   stmtsRS RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
+bloqueR ::=LLLAVE stmtsRS RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
                                     parser.tablaVar = parser.tablaVar.prev ;  
                                  :}
 ;
@@ -789,7 +789,9 @@ stmtsRS ::= stmtsRS:v1 stmtsR:v2 PYC
 
 seleccion1 ::= IF expr:v1 {:parser.bloque = new ASTInstBloque(parser.bloque); 
                            parser.tablaVar = new SymTable(parser.tablaVar);
-                         :} bloqueR elseif:v3 
+                         :} 
+                          bloqueR 
+                          elseif:v3 
 {:if (!v1.getTip().isBool())
       throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
     parser.bloque.padre.add(new ASTInstIf(parser.bloque,v1,v3));
@@ -797,9 +799,8 @@ seleccion1 ::= IF expr:v1 {:parser.bloque = new ASTInstBloque(parser.bloque);
 :}
 ;
 
-seleccion ::= IF expr:v1 {:parser.bloque = new ASTInstBloque(parser.bloque); 
-                           parser.tablaVar = new SymTable(parser.tablaVar);
-                         :} bloque elseif:v3 
+seleccion ::= IF expr:v1  
+                          bloque elseif:v3 
 {:if (!v1.getTip().isBool())
       throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
     parser.bloque.padre.add(new ASTInstIf(parser.bloque,v1,v3));
@@ -936,7 +937,7 @@ expr ::= expr:v1 PLUS expr:v3
                                 else if (v1.getTip().isBool())
                                   RESULT = new ASTExprBoolBinBool("IGUALIGUAL",v1,v3);
                                 else if (v1.getTip().isChar())
-                                  RESULT = new ASTExprBoolBinChar(v1,v3);
+                                  RESULT = new ASTExprBoolBinChar("IGUALIGUAL", v1,v3);
                                 else if (v1.getTip().isString())
                                   RESULT = new ASTExprBoolBinString(v1,v3);
                                 else if (v1.getTip().isStruct())
@@ -952,8 +953,10 @@ expr ::= expr:v1 PLUS expr:v3
                                 else if (v1.getTip().isBool())
                                   RESULT = new ASTExprBoolBinBool("DIFERENTE",v1,v3);
                                 else if (v1.getTip().isChar())
-                                  RESULT = new ASTExprBoolUna(new ASTExprBoolBinChar(v1,v3));
+                                  //Por que???
+                                  RESULT = new ASTExprBoolUna(new ASTExprBoolBinChar("DIFERENTE", v1,v3));
                                 else if (v1.getTip().isString())
+                                  //Por que???
                                   RESULT = new ASTExprBoolUna(new ASTExprBoolBinString(v1,v3));
                               :}
 
@@ -984,6 +987,35 @@ expr ::= expr:v1 PLUS expr:v3
                                   throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
                                 RESULT = new ASTExprBoolBinBool("O", v1, v3);
                               :}
+
+|  TKCHAR:v1 IGUALIGUAL:v2 TKCHAR:v3       {: RESULT = new ASTExprBoolBinChar("IGUALIGUAL", new ASTExprCharCtte(v1.toCharArray()[0]),new ASTExprCharCtte(v3.toCharArray()[0])); :}
+|  expr:v1 IGUALIGUAL:v2 TKCHAR:v3          {:   
+                                            if (v1.getTip().isChar())
+                                              RESULT = new ASTExprBoolBinChar("IGUALIGUAL", v1,new ASTExprCharCtte(v3.toCharArray()[0])); 
+                                            else
+                                              throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                          :}
+|  TKCHAR:v1 IGUALIGUAL:v2 expr:v3          {: 
+                                            if (v3.getTip().isChar())
+                                              RESULT = new ASTExprBoolBinChar("IGUALIGUAL", new ASTExprCharCtte(v1.toCharArray()[0]),v3); 
+                                            else
+                                              throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                        :}
+|  TKCHAR:v1 DIFERENTE:v2 TKCHAR:v3       {: RESULT = new ASTExprBoolBinChar("DIFERENTE",new ASTExprCharCtte(v1.toCharArray()[0]),new ASTExprCharCtte(v3.toCharArray()[0])); :}
+|  expr:v1 DIFERENTE:v2 TKCHAR:v3          {:   
+                                            if (v1.getTip().isChar())
+                                              RESULT = new ASTExprBoolBinChar("DIFERENTE",v1,new ASTExprCharCtte(v3.toCharArray()[0])); 
+                                            else
+                                              throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                          :}
+|  TKCHAR:v1 DIFERENTE:v2 expr:v3          {: 
+                                            if (v3.getTip().isChar())
+                                              RESULT = new ASTExprBoolBinChar("DIFERENTE",new ASTExprCharCtte(v1.toCharArray()[0]),v3); 
+                                            else
+                                              throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                        :}
+
+
 
 | opruna:v1 expr:v2 
 
