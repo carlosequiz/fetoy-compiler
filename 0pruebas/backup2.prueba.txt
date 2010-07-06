@@ -1,10 +1,16 @@
 sub int uno();
 {
   sub int uno(){
-    return 1;
+    typedef int l;
+    (l) n = 8;
+    int l; 
+    return n;
   }
 
   sub main {
-    uno();
+    typedef int[2][2] a;
+    (a) n = [[1,2],[1,2]];
+    n[0][0] = uno();
+    print(n[0][0]);
   }
 }

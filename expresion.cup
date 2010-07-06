@@ -510,7 +510,12 @@ stmt ::= asignacion
 | seleccion
 | repeticion
 | switche
-| llamadafuncion:v1 {:    parser.bloque.add((ASTInst) v1); :}
+| llamadafuncion:v1 {:   
+                        if (v1 instanceof ASTExprFun)
+                          throw new ReturnException(parser.scanner.linea(),parser.scanner.columna());
+                        else
+                            parser.bloque.add((ASTInst) v1); 
+                    :}
 | deftipo
 | imprime
 | lee
@@ -545,9 +550,6 @@ llamadafuncion ::= ID:v1 LPAREN parame:v2 RPAREN
                                                   if (!procInfo.checkParameterForLValues(v2))
                                                     throw new NotLValuesException(v1,parser.scanner.linea(),parser.scanner.columna());
                                                   ASTInstFuncion f1 = new ASTInstFuncion(v2, procInfo);
-                                                  //if (f1.checkLValues()){
-                                                    //throw new NotLValueException(v1,parser.scanner.linea(),parser.scanner.columna());
-                                                  //}
                                                   if (procInfo.retType.isVoid()){
                                                     RESULT = f1;
                                                   } else
@@ -627,9 +629,6 @@ case1::= case1:v1 CASE expr:v2 DOSPUNTOS bloqueR {:  RESULT = v1;
                                   parser.bloque = parser.bloque.padre;
                                 :}
 ;
-
-
-
 
 case ::= case:v1 CASE expr:v2 DOSPUNTOS bloque {:  RESULT = v1; 
                                                   if (v1 == null)

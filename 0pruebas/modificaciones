@@ -1,5 +1,7 @@
 Modificaciones que hemos hecho desde la entrega de semana 10.
 
+* Chequeo de que si la funcion retorna un valor, debe ser asignado a una
+* variable(Ravelo dijo que le daba consistencia al lenguaje) 
 * En los switch no existen flotantes.
 * lectura de Variables 
 * Chequeo de cada parametro que deba ser pasado como referencia, debe ser lvalue.

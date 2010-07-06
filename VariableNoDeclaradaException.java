@@ -54,6 +54,13 @@ class UnionException extends Exception {
   }
 }
 
+class ReturnException  extends Exception {
+  
+  ReturnException  (int linea,int columna){
+    super("La funcion debe devolver un valor en la linea "+linea+" en la columna "+columna+".");
+  }
+}
+
 class PromesaNoDeclaradaException extends Exception{
   
   PromesaNoDeclaradaException(int linea, int columna){
