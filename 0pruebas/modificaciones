@@ -1,5 +1,6 @@
 Modificaciones que hemos hecho desde la entrega de semana 9.
 
+* Agregar lectura de Variables
 * Chequeo de que exista un return en el procedimiento cuando devuelva un parametro.
 * Chequeo de que la llamada a funcion tenga la cantidad de parametros correctos
 * Agregar el Break
@@ -25,7 +26,6 @@ Modificaciones que faltan
 * Cada parametro que deba ser pasado como referencia, debe ser lvalue.
 * Chequeo dinamicos de struct
 * Retornar valores del procedimiento.
-* Agregar lectura de Variables
 * Dejar de que imprima la linea vacia cuando llames a salvar y restaurar.
 * Casteos de flotantes en el switch. Cuando comparas registros, debemos tomar en cuenta si la comparacion es de flotantes o enteros.
 * Chequear la compatibilidad de los arreglos(Casteos explicitos)

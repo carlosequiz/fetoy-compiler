@@ -71,6 +71,12 @@ EndOfLineComment     = "//" [^\r\n]* {LineTerminator}
  
 %%
  
+
+<YYINITIAL> "read_bool" 					{ return symbol(sym.READ_BOOL);}
+<YYINITIAL> "read_int" 					{ return symbol(sym.READ_INT);}
+<YYINITIAL> "read_char" 					{ return symbol(sym.READ_CHAR);}
+<YYINITIAL> "read_float" 					{ return symbol(sym.READ_FLOAT);}
+<YYINITIAL> "read_string" 					{ return symbol(sym.READ_STRING);}
 <YYINITIAL> "print" 					{ return symbol(sym.PRINT);}
 <YYINITIAL> "return" 					{ return symbol(sym.RETURN);}
 <YYINITIAL> {Comment}  					    {/* ignore */}

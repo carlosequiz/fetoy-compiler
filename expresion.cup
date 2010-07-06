@@ -121,7 +121,11 @@ terminal UNION;
 terminal TYPEDEF;
 terminal PUNTO;
 terminal PRINT;
-
+terminal READ_INT;
+terminal READ_CHAR;
+terminal READ_FLOAT;
+terminal READ_STRING;
+terminal READ_BOOL;
 
 /* Non terminals */
 non terminal ASTExpr expr;
@@ -174,12 +178,17 @@ non terminal ASTExprArrayElem elem_array;
 non terminal deftipo; 
 non terminal structUnion union; 
 non terminal structUnion lista_union; 
-non terminal LinkedList parametros;
+//non terminal LinkedList parametros;
 non terminal ASTTipoStruct st;
 non terminal ASTInst imprime;
 non terminal seleccion1;
 non terminal switche1;
 non terminal LinkedList case1;
+non terminal read_int;
+non terminal read_float;
+non terminal ASTExprReadString read_string;
+non terminal read_char;
+non terminal read_bool;
 
 
 /* Precedences */
@@ -203,8 +212,8 @@ inicial ::=  promesas LLLAVE {:parser.bloque = new ASTInstBloque(null); :}
     procedimiento principal procedimiento RLLAVE 
             {:if(!parser.funciones.equals(parser.promesas))
                 throw new PromesaNoDeclaradaException(parser.scanner.linea(), parser.scanner.columna());
-              System.out.println(parser.principal);
-              //parser.principal.toCode(0,0);
+              //System.out.println(parser.principal);
+              parser.principal.toCode(0,0);
             :}
 ;
 
@@ -507,6 +516,22 @@ stmt ::= asignacion
 | llamadafuncion:v1 {:    parser.bloque.add((ASTInst) v1); :}
 | deftipo
 | imprime
+;
+
+read_int ::= READ_INT
+;
+
+read_bool ::= READ_BOOL 
+;
+read_char ::= READ_CHAR 
+;
+read_string ::= READ_STRING LPAREN expr:v1 RPAREN 
+  {:if (!v1.getTip().isNumber())
+      throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+    RESULT = new ASTExprReadString(v1);
+  :}
+;
+read_float ::= READ_FLOAT 
 ;
 
 imprime ::= PRINT LPAREN expr:v1 RPAREN {:
@@ -1029,6 +1054,12 @@ expr ::= expr:v1 PLUS expr:v3
 parametros ::= parametros COMA expr
 | expr
 |*/
+
+| read_int:v1 {: RESULT = new ASTExprReadInt(); :}
+| read_string:v1 {: RESULT = v1; :}
+| read_bool:v1 {: RESULT = new ASTExprReadBool(); :}
+| read_float:v1 {: RESULT = new ASTExprReadFloat(); :}
+| read_char:v1 {: RESULT = new ASTExprReadChar(); :}
 ;
 
 elem_array ::=  elem_array:v1 LCORCHETE expr:v2 RCORCHETE {:

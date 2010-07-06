@@ -29,8 +29,10 @@ class ASTInstImprime extends ASTInst {
     String reg = Registros.T[pr % Registros.maxT];
     String regF = Registros.F[prf % Registros.maxF];
     ASTTipo tipo = expr.getTip();
+    String proxI2 = Global.nuevaEtiqueta();
 
-    expr.toCode(pr,prf,proxI);
+    if (expr.toCode(pr,prf,proxI2))
+      Global.out.println(proxI2+":");
 
     //Recibe lo que este en result, y lo imprime de acuerdo al tipo
     if (tipo != null)
@@ -43,10 +45,34 @@ class ASTInstImprime extends ASTInst {
         Global.out.println("mov.s $f12, " + regF);
         Global.out.println("syscall");
       } else if  (tipo.isBool()){
+        Global.out.println("li $v0, 1");
+        Global.out.println("move $a0, " + reg);
+        Global.out.println("syscall");
       } else if  (tipo.isChar()){
+        Global.out.println("li $a0 2\nli $v0 9\nsyscall");
+        Global.out.println("sb "+reg+" 0($v0)");
+        Global.out.println("move $a0, $v0");
+        Global.out.println("li $v0, 4\nsyscall");
       } else if  (tipo.isString()){
-        Global.out.println("li $v0, 4");
-        Global.out.println("li $a0, ");
+        //Supongo que en pr me viene la direccion del string que tengo que imprimir.
+        /*//Tamano a reservar en memoria para guardar el string para imprimirlo.
+        //el +1 es para que sepa el final de string.
+        int tam = ((ASTExprStringCtte)expr).getString().length()-1;
+        String reg1 = Registros.T[(pr+1) % Registros.maxT];
+        //Reservo espacio para el String.
+        Global.out.println("li $a0 , "+tam);
+        Global.out.println("li $v0, 9\nsyscall");
+        //Copiamos en pr la direccion del espacio que me asignaron para ir guardando
+        //letra por letra en esa direccion.
+        Global.out.println("move "+reg+" $v0");
+        for (int i =1;i < ((ASTExprStringCtte) expr).getString().toCharArray().length - 1;i++){
+          Global.out.println("li "+reg1+" , "+((int) ((ASTExprStringCtte)expr).getString().toCharArray()[i]));
+          Global.out.println("sb "+reg1+" "+(i-1)+"("+reg+")");
+        }
+        */
+        //Copiamos la direccion del string que acabamos de guardar en $a0 y mandamos a imprimir.
+        Global.out.println("move $a0, "+reg);
+        Global.out.println("li $v0, 4\nsyscall");
       }
 
     return false;
@@ -756,3 +782,4 @@ class ASTInstReturn extends ASTInst{
     return tr;
   }
 }
+

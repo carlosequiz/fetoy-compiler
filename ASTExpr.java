@@ -470,7 +470,52 @@ class ASTExprStringBin extends ASTExprString{ ASTExpr izq; ASTExpr der; ASTTipo
   boolean Id(){ return izq instanceof ASTExprId || der instanceof ASTExprId ||
     izq.Id() || der.Id(); }
 
-  boolean toCode(int pr, int prf, String a){ return false; } }
+  String getString(){
+    return "";
+  }
+  /*Supongo que en pr viene la direccion del primer string y en pr+1 la dir del 
+   * segundo string 
+   */
+  boolean toCode(int pr, int prf, String a){ 
+    String NE = Global.nuevaEtiqueta();
+    String NE2 = Global.nuevaEtiqueta();
+    String NE3 = Global.nuevaEtiqueta();
+    //Registros donde esta el apuntador al primer string
+    String reg = Registros.T[pr % Registros.maxT];
+    //Registros donde esta el apuntador al segundo string
+    String preg = Registros.T[(pr +1) % Registros.maxT];
+    //Registro donde se verificara si se acabo el string.
+    String sreg = Registros.T[(pr+2) % Registros.maxT];
+    //Registro donde se iterara el String.
+    String dreg = Registros.T[(pr+3) % Registros.maxT];
+    //Registros donde se llevara el tamano de lo dos string/
+    String creg = Registros.T[(pr+4) % Registros.maxT];
+
+    Global.out.println("li "+creg+", -1");
+    Global.out.println("mv "+dreg+" , "+reg);
+    Global.out.println("add "+dreg+" , "+dreg+" , -1");
+    Global.out.println(NE+":");
+    Global.out.println("add "+dreg+" , "+dreg+" , 1");
+    Global.out.println("add "+creg+" , "+creg+" , 1");
+    Global.out.println("lb "+sreg"+ , 0("+dreg+")");
+    Global.out.println("beqz "+sreg+" "+NE2);
+    Global.out.println("j "+NE);
+    Global.out.println(NE2+":");
+    Global.out.println("mv "+dreg+" ,"+preg);
+    Global.out.println("add "+dreg+" , "+dreg+" , -1");
+    Global.out.println("add "+creg+" , "+creg+" , -1");
+    Global.out.println(NE3+":");
+    Global.out.println("add "+dreg+" , "+dreg+" , 1");
+    Global.out.println("add "+creg+" , "+creg+" , 1");
+    Global.out.println("lb "+sreg"+ , 0("+dreg+")");
+    Global.out.println("beqz "+sreg+" "+NE4);
+    Global.out.println("j "+NE3);
+    Global.out.println(NE4+":");
+    Global.out.println("li $v0 9\nsyscall");
+    Global.out.println("
+    return false;
+  }
+}
 
   class ASTExprStringCtte extends ASTExprString { String ctte; ASTTipo tipo;
     //@ invariant tipo!=null;
@@ -485,7 +530,26 @@ class ASTExprStringBin extends ASTExprString{ ASTExpr izq; ASTExpr der; ASTTipo
       return tipo;
     }
 
+    String getString(){
+      return ctte;
+    }
+
     boolean toCode(int pr, int prf, String a){
+      //Tamano a reservar en memoria para guardar el string para imprimirlo.
+      //el +1 es para que sepa el final de string.
+      int tam = ctte.length() -1;
+      String reg = Registros.T[pr % Registros.maxT];
+      String reg1 = Registros.T[(pr+1) % Registros.maxT];
+      //Reservo espacio para el String.
+      Global.out.println("li $a0 , "+tam);
+      Global.out.println("li $v0, 9\nsyscall");
+      //Copiamos en pr la direccion del espacio que me asignaron para ir guardando
+      //letra por letra en esa direccion.
+      Global.out.println("move "+reg+" $v0");
+      for (int i =1;i < ctte.toCharArray().length - 1;i++){
+        Global.out.println("li "+reg1+" , "+((int) ctte.toCharArray()[i]));
+        Global.out.println("sb "+reg1+" "+(i-1)+"("+reg+")");
+      }
       return false;
     }
 
@@ -951,6 +1015,159 @@ class ASTExprFun extends ASTExpr {
 
   boolean Id(){
     return false;
+  }
+
+}
+
+class ASTExprReadInt extends ASTExpr {
+  ASTExprReadInt(){
+
+  }
+
+  ASTTipo getTip(){
+    return new ASTTipoInt();
+  }
+
+  boolean toCode(int pr, int prf,String proxI){
+    String reg = Registros.T[pr % Registros.maxT];
+    Global.out.println("li $v0 5");
+    Global.out.println("syscall");
+    Global.out.println("move "+reg+" $v0");
+    return false;
+  }
+
+  boolean Id(){
+    return false;
+  }
+
+  int getValor(){
+    return 4;
+  }
+
+}
+
+class ASTExprReadBool extends ASTExpr {
+  ASTExprReadBool(){
+
+  }
+    
+  boolean toCode(int pr, int prf,String proxI){
+    String reg = Registros.T[pr % Registros.maxT];
+    Global.out.println("li $v0 , 5\nsyscall");
+    Global.out.println("move "+reg+" $v0");
+    Global.out.println("beqz $v0 "+proxI);
+    Global.out.println("li $v0 , 1");
+    Global.out.println("beq $v0 "+reg+" "+proxI);
+    Global.out.println("li $v0, 4\nla $a0 ,readBool\nsyscall");
+    Global.out.println("j fin");
+    return true;
+  }
+
+  boolean Id(){
+    return false;
+  }
+
+  int getValor(){
+    return 4;
+  }
+
+  ASTTipo getTip(){
+    return new ASTTipoBool();
+  }
+}
+
+class ASTExprReadChar extends ASTExpr {
+  ASTExprReadChar(){
+
+  }
+    
+  boolean toCode(int pr, int prf,String proxI){
+    //Devuelvo en pr la direccion donde esta guardado el char.
+    String reg = Registros.T[pr % Registros.maxT];
+    Global.out.println("li $a0 2");
+    Global.out.println("li $v0 9\nsyscall");
+    Global.out.println("move "+reg+" $v0");
+    Global.out.println("move $a0 , $v0");
+    Global.out.println("li $a1 2");
+    Global.out.println("li $v0 8\nsyscall");
+    Global.out.println("lb "+reg+" 0("+reg+")");
+    return false;
+  }
+
+  boolean Id(){
+    return false;
+  }
+
+  int getValor(){
+    return 4;
+  }
+
+
+  ASTTipo getTip(){
+    return new ASTTipoChar();
+  }
+}
+
+class ASTExprReadFloat extends ASTExpr {
+  ASTExprReadFloat(){
+
+  }
+    
+  boolean toCode(int pr, int prf,String proxI){
+    String reg = Registros.F[prf % Registros.maxF];
+    Global.out.println("li $v0 6\nsyscall");
+    Global.out.println("mov.s "+reg+" $f0" );
+    return false;
+  }
+
+  boolean Id(){
+    return false;
+  }
+
+  int getValor(){
+    return 4;
+  }
+
+  ASTTipo getTip(){
+    return new ASTTipoFloat();
+  }
+
+}
+
+class ASTExprReadString extends ASTExprString {
+  ASTExpr tam;
+  ASTExprReadString(ASTExpr t){
+    tam = t;
+  }
+    
+  boolean toCode(int pr, int prf,String proxI){
+    String reg = Registros.T[pr % Registros.maxT];
+    tam.toCode(pr,prf,proxI);
+    //Movemos el tamano del string a $a0.
+    Global.out.println("move $a0 , "+reg);
+    //Cargamos en $v0 9 para pedir espacio de tamano $a0.
+    Global.out.println("li $v0 9\nsyscall");
+    //El apuntador nos los da el $v0, y lo movemos a $a0.
+    Global.out.println("move $a0 , $v0");
+    //Movemos a $a1 el tamano del string que queremos leer por consola.
+    Global.out.println("move $a1 , "+reg);
+    //Cargamos en $v0 8 para leer un string por consola
+    Global.out.println("li $v0 8\nsyscall");
+    //Cargamos en pr el aputandor al string leido.
+    Global.out.println("move "+reg+" , $a0"); 
+    return false;
+  }
+
+  boolean Id(){
+    return false;
+  }
+
+  int getValor(){
+    return 4;
+  }
+
+  ASTTipo getTip(){
+    return new ASTTipoString();
   }
 
 }

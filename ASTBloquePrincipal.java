@@ -46,6 +46,7 @@ class ASTBloquePrincipal {
     int i = global.tamG();
     Global.out.println(".data");
     Global.out.println("str1: .asciiz \"Error en los indices de los arreglos.\"");
+    Global.out.println("readBool: .asciiz \"Exception:Introduzca un booleano valido 0 o 1.\"");
     if (i != 0)
       Global.out.println("global: .space "+i);
     Global.out.println(".text");
