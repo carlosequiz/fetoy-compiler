@@ -1,9 +1,9 @@
 Modificaciones que hemos hecho desde la entrega de semana 10.
 
-
-* lectura de Variables enteras y flotantes
+* En los switch no existen flotantes.
+* lectura de Variables 
 * Chequeo de cada parametro que deba ser pasado como referencia, debe ser lvalue.
-* Retornar valores del procedimiento(Todo usando estructuras con atributos enteros, booleanos y flotantes).
+* Retornar valores del procedimiento
 * Chequeo de que exista un return en el procedimiento cuando devuelva un parametro.
 * Chequeo de que la llamada a funcion tenga la cantidad de parametros correctos
 * Agregar el Break
@@ -15,12 +15,12 @@ Modificaciones que hemos hecho desde la entrega de semana 10.
 
 Modificaciones que faltan
 
+* Variables de String
+* Problemas de Recursión mutua
+* Typedef
 * Chequeo dinamicos de struct
-* Agregar lectura de Variables booleanas y caracteres
-* Faltan los print de caracteres y booleanos
-* Retornar valores del procedimiento de Struct y Arreglos que los atributos sean caracteres.
 * Dejar de que imprima la linea vacia cuando llames a salvar y restaurar.
-* Casteos de flotantes en el switch. Cuando comparas registros, debemos tomar en cuenta si la comparacion es de flotantes o enteros.
+* Chequear que el tipo sea valido en los switch
 * Chequear la compatibilidad de los arreglos(Casteos explicitos)
 * Cambiar algunas de las print que reflejan excepciones por excepciones
 * Chequear que si la funcion retorna algo, debe asignarlo a una variable

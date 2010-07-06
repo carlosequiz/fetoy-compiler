@@ -147,8 +147,9 @@ class ASTInstAsigExp extends ASTInstAsig {
 
           Registros.salvar(pr + 1);
           Registros.salvarF(prf + 1);
-          ((ASTExprArrayCtte) exp).toCodeI(pr + 1, prf+1, proxI, i);
-          elem.modifica(pr, prf);
+          ASTInstAsigExp e = new ASTInstAsigExp(elem,(ASTExpr) ((ASTExprArrayCtte) exp).values.get(i));
+          e.toCode(pr+1, prf+1, proxI, "bla"); 
+          
           Registros.restaurar(pr + 1);
           Registros.restaurarF(prf + 1);
         } 
@@ -553,7 +554,7 @@ class ASTInstFor extends ASTInst{
     String NE3 = Global.nuevaEtiqueta();
     String y = Registros.T[pr % Registros.maxT];
     boolean us = false;
-//System.out.println(aumento);
+    //System.out.println(aumento);
     if (inicial!= null)
       inicial.toCode(pr, prf, NE,jumpBreak);
     Global.out.println("j "+NE);

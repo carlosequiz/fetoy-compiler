@@ -33,7 +33,12 @@ class NotLValuesException  extends Exception {
   }
 }
 
-
+class SwitchFloatException  extends Exception {
+  
+  SwitchFloatException  (int linea,int columna){
+    super("No se pueden comparar flotantes en los switch, en la linea "+linea+" en la columna "+columna+", problemas con los parametros.");
+  }
+}
 
 class SwitchException extends Exception {
 

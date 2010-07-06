@@ -1,5 +1,10 @@
+sub int uno();
 {
+  sub int uno(){
+    return 1;
+  }
+
   sub main {
-    print("El valor \t de fibonacci\t de ");
+    uno();
   }
 }

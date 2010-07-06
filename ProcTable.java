@@ -124,7 +124,7 @@ class Proc {
     Global.out.println("la $fp, ($sp)");
 
     //Reservar variables locales, no deberia tomar en cuenta parametros, ni return address ni frame pointer.
-    int tamBloque = cuerpo.t.tam(new tripleta(0,0,0)).espacio;
+    int tamBloque = cuerpo.tam(new tripleta(0,0,0)).espacio;
 
     Global.out.println("add $sp, $sp, -" + tamBloque);
 
@@ -151,10 +151,13 @@ class Proc {
   //Se supone que se chequeo antes la llamada de la funcion tuviera los parametros correctos
   boolean checkParameterForLValues(LinkedList paramReales) {
     int i = 0;
-    for  (Enumeration a = cuerpo.t.table.elements(); a.hasMoreElements() ; i++){
-      ASTExpr paramReal = (ASTExpr) paramReales.get(i);
-      if (((info)a.nextElement()).tipoParametro.equals("ref") && !(paramReal instanceof ASTExprLValue))
-        return false;
+    for  (Enumeration a = cuerpo.t.table.elements(); a.hasMoreElements() ;){
+      info inf = (info) a.nextElement();
+      if (inf.onparam && inf.tipoParametro.equals("ref")){
+        ASTExpr paramReal = (ASTExpr) paramReales.get(inf.numParam);
+        if (!(paramReal instanceof ASTExprLValue))
+          return false;
+      }
     }
     return true;
   }
