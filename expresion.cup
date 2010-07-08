@@ -519,7 +519,12 @@ stmt ::= asignacion
 | seleccion
 | repeticion
 | switche
-| llamadafuncion:v1 {:    parser.bloque.add((ASTInst) v1); :}
+| llamadafuncion:v1 {:   
+                        if (v1 instanceof ASTExprFun)
+                          throw new ReturnException(parser.scanner.linea(),parser.scanner.columna());
+                        else
+                            parser.bloque.add((ASTInst) v1); 
+                    :}
 | deftipo
 | imprime
 | lee
@@ -570,9 +575,6 @@ llamadafuncion ::= ID:v1 LPAREN parame:v2 RPAREN
                                                   if (!procInfo.checkParameterForLValues(v2))
                                                     throw new NotLValuesException(v1,parser.scanner.linea(),parser.scanner.columna());
                                                   ASTInstFuncion f1 = new ASTInstFuncion(v2, procInfo);
-                                                  //if (f1.checkLValues()){
-                                                    //throw new NotLValueException(v1,parser.scanner.linea(),parser.scanner.columna());
-                                                  //}
                                                   if (procInfo.retType.isVoid()){
                                                     RESULT = f1;
                                                   } else
@@ -589,7 +591,11 @@ parame ::= parame:v1 COMA expr:v2 {: RESULT = v1; RESULT.add(v2);:}
 
  // ********************************************************** SWITCH ***************************************************************
 
-switche ::= SWITCH LPAREN expr:v1 RPAREN LLLAVE case:v2 RLLAVE {:  LinkedList casos = new LinkedList(); 
+switche ::= SWITCH LPAREN expr:v1 {: 
+                                    if (v1.getTip().isFloat()){
+                                      throw new SwitchFloatException(parser.scanner.linea(),parser.scanner.columna());  
+                                    }
+                                   :} RPAREN LLLAVE case:v2 RLLAVE {:  LinkedList casos = new LinkedList(); 
                                                                   LinkedList bloques = new LinkedList();
                                                                   for (int i = 0; i < v2.size(); i++){
                                                                     if (i%2 == 0){
@@ -617,10 +623,6 @@ switche1 ::= SWITCH LPAREN expr:v1 RPAREN LLLAVE case1:v2 RLLAVE {:  LinkedList 
                                                                       if (!caseexp.getTip().isCompatible(v1.getTip()) )
                                                                         throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
                                                                       
-                                                                      //Casteo Implicito
-                                                                      if (v1.getTip().isFloat() && caseexp.getTip().isEntero())
-                                                                        caseexp = new ASTExprCast(caseexp, new ASTTipoFloat());
-
                                                                       casos.add(caseexp);
                                                                     } else
                                                                       bloques.add(v2.get(i));
@@ -634,6 +636,8 @@ case1::= case1:v1 CASE expr:v2 DOSPUNTOS bloqueR {:  RESULT = v1;
                                                     System.out.println("En el case, la expr es nula");
                                                   if (v2.Id())
                                                     throw new NoIdException(parser.scanner.linea(),parser.scanner.columna());
+                                                  if (v2.getTip().isFloat())
+                                                    throw new SwitchFloatException(parser.scanner.linea(),parser.scanner.columna());
                                                   RESULT.add(v2);
                                                   RESULT.add(parser.bloque);
                                                   parser.bloque = parser.bloque.padre;
@@ -643,14 +647,13 @@ case1::= case1:v1 CASE expr:v2 DOSPUNTOS bloqueR {:  RESULT = v1;
                                     System.out.println("En el case, la expr es nula");
                                   if (v1.Id())
                                     throw new NoIdException(parser.scanner.linea(), parser.scanner.columna());
+                                  if (v1.getTip().isFloat())
+                                    throw new SwitchFloatException(parser.scanner.linea(),parser.scanner.columna());
                                   RESULT.add(v1);
                                   RESULT.add(parser.bloque);
                                   parser.bloque = parser.bloque.padre;
                                 :}
 ;
-
-
-
 
 case ::= case:v1 CASE expr:v2 DOSPUNTOS bloque {:  RESULT = v1; 
                                                   if (v1 == null)

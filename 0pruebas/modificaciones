@@ -1,13 +1,16 @@
 Modificaciones que hemos hecho desde la entrega de semana 10.
 
-<<<<<<< HEAD
 * Agregar lectura de Variables
-=======
 
 * lectura de Variables enteras y flotantes
 * Chequeo de cada parametro que deba ser pasado como referencia, debe ser lvalue.
 * Retornar valores del procedimiento(Todo usando estructuras con atributos enteros, booleanos y flotantes).
->>>>>>> aa55a327a2e80e1ade3bf73787a98730d5250f0c
+* Chequeo de que si la funcion retorna un valor, debe ser asignado a una
+* variable(Ravelo dijo que le daba consistencia al lenguaje) 
+* En los switch no existen flotantes.
+* lectura de Variables 
+* Chequeo de cada parametro que deba ser pasado como referencia, debe ser lvalue.
+* Retornar valores del procedimiento
 * Chequeo de que exista un return en el procedimiento cuando devuelva un parametro.
 * Chequeo de que la llamada a funcion tenga la cantidad de parametros correctos
 * Agregar el Break
@@ -19,16 +22,17 @@ Modificaciones que hemos hecho desde la entrega de semana 10.
 
 Modificaciones que faltan
 
+* Variables de String
+* Problemas de Recursión mutua
+* Typedef
 * Chequeo dinamicos de struct
-<<<<<<< HEAD
 * Retornar valores del procedimiento.
-=======
 * Agregar lectura de Variables booleanas y caracteres
 * Faltan los print de caracteres y booleanos
 * Retornar valores del procedimiento de Struct y Arreglos que los atributos sean caracteres.
->>>>>>> aa55a327a2e80e1ade3bf73787a98730d5250f0c
 * Dejar de que imprima la linea vacia cuando llames a salvar y restaurar.
-* Casteos de flotantes en el switch. Cuando comparas registros, debemos tomar en cuenta si la comparacion es de flotantes o enteros.
+* Chequear que el tipo sea valido en los switch
 * Chequear la compatibilidad de los arreglos(Casteos explicitos)
 * Cambiar algunas de las print que reflejan excepciones por excepciones
 * Chequear que si la funcion retorna algo, debe asignarlo a una variable
+adfafa
