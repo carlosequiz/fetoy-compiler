@@ -42,11 +42,20 @@ class ASTBloquePrincipal {
   }
   
   //@ requires global != null && Global.out !=null && main != null;
-  void toCode(int pr, int prf){
+  void toCode(int pr, int prf, Hashtable mensajes){
     int i = global.tamG();
     Global.out.println(".data");
     Global.out.println("str1: .asciiz \"Error en los indices de los arreglos.\"");
+<<<<<<< HEAD
     Global.out.println("readBool: .asciiz \"Exception:Introduzca un booleano valido 0 o 1.\"");
+=======
+    for ( Enumeration a = mensajes.keys(); a.hasMoreElements() ;){
+      String msj = (String) a.nextElement();
+      Global.out.println(msj + ": .asciiz "+mensajes.get(msj));
+    }
+
+
+>>>>>>> aa55a327a2e80e1ade3bf73787a98730d5250f0c
     if (i != 0)
       Global.out.println("global: .space "+i);
     Global.out.println(".text");

@@ -21,7 +21,6 @@ class ASTInstImprime extends ASTInst {
     expr = e;
   }
 
-  // Tratando de arreglar el indice de los arreglos, pero sin éxito.
   //@ requires pr % Registros.maxT > 0; 
   //@ requires prf % Registros.maxF > 0; 
   //@ requires Global.out != null; 
@@ -33,14 +32,15 @@ class ASTInstImprime extends ASTInst {
 
     if (expr.toCode(pr,prf,proxI2))
       Global.out.println(proxI2+":");
-
     //Recibe lo que este en result, y lo imprime de acuerdo al tipo
     if (tipo != null)
       if (tipo.isEntero()){
+        expr.toCode(pr,prf,proxI);
         Global.out.println("li $v0, 1");
         Global.out.println("move $a0, " + reg);
         Global.out.println("syscall");
       } else if  (tipo.isFloat()){
+        expr.toCode(pr,prf,proxI);
         Global.out.println("li $v0, 2");
         Global.out.println("mov.s $f12, " + regF);
         Global.out.println("syscall");
@@ -54,6 +54,7 @@ class ASTInstImprime extends ASTInst {
         Global.out.println("move $a0, $v0");
         Global.out.println("li $v0, 4\nsyscall");
       } else if  (tipo.isString()){
+<<<<<<< HEAD
         //Supongo que en pr me viene la direccion del string que tengo que imprimir.
         /*//Tamano a reservar en memoria para guardar el string para imprimirlo.
         //el +1 es para que sepa el final de string.
@@ -73,6 +74,10 @@ class ASTInstImprime extends ASTInst {
         //Copiamos la direccion del string que acabamos de guardar en $a0 y mandamos a imprimir.
         Global.out.println("move $a0, "+reg);
         Global.out.println("li $v0, 4\nsyscall");
+=======
+        Global.out.println("li $v0, 4");
+        Global.out.println("la $a0, " + ((ASTExprStringCtte) expr).etiqueta);
+        Global.out.println("syscall");
       }
 
     return false;
@@ -82,6 +87,52 @@ class ASTInstImprime extends ASTInst {
     return tr;
   }
 }
+
+class ASTInstLee extends ASTInst {
+  ASTExpr expr;
+
+  //@invariant expr != null;
+
+  //@requires e != null;
+  ASTInstLee(ASTExpr e){
+    expr = e;
+  }
+
+  //@ requires pr % Registros.maxT > 0; 
+  //@ requires prf % Registros.maxF > 0; 
+  //@ requires Global.out != null; 
+  boolean toCode(int pr, int prf, String proxI, String jumpBreak){
+    String reg = Registros.T[pr % Registros.maxT];
+    ASTTipo tipo = expr.getTip();
+
+    ((ASTExprLValue)expr).cargaDireccion(pr,prf,proxI);
+
+    //Recibe lo que este en result, y lo imprime de acuerdo al tipo
+    if (tipo != null)
+      if (tipo.isEntero()){
+        Global.out.println("li $v0, 5");
+        Global.out.println("syscall");
+        Global.out.println("sw $v0, ("+reg+")");
+      } else if  (tipo.isFloat()){
+        Global.out.println("li $v0, 6");
+        Global.out.println("syscall");
+        Global.out.println("s.s $f0, (" + reg + ")");
+      } else if  (tipo.isBool()){
+      } else if  (tipo.isChar()){
+      } else if  (tipo.isString()){
+        Global.out.println("li $v0, 4");
+        Global.out.println("li $a0, ");
+>>>>>>> aa55a327a2e80e1ade3bf73787a98730d5250f0c
+      }
+
+    return false;
+  }
+
+  tripleta tam( tripleta tr){
+    return tr;
+  }
+}
+
 
 class ASTInstAsigExp extends ASTInstAsig {
   ASTExprLValue lvalue;
@@ -142,8 +193,8 @@ class ASTInstAsigExp extends ASTInstAsig {
         Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
         Global.out.println("sw " + reg3 + ", (" + reg + ")");
         for (int cont = 4; cont < tamano; cont += 4){
-          Global.out.println("add " + reg + ", "+ reg +", " + 4);
-          Global.out.println("add " + reg2 + ", "+ reg2 +", " + 4);
+          Global.out.println("add " + reg + ", "+ reg +", -" + 4);
+          Global.out.println("add " + reg2 + ", "+ reg2 +", -" + 4);
           Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
           Global.out.println("sw " + reg3 + ", (" + reg + ")");
         }
@@ -156,14 +207,13 @@ class ASTInstAsigExp extends ASTInstAsig {
         //Limpio todo el tamaño del union 
       //}
     } else {
-          lvalue.cargaDireccion(pr,prf, proxI);
-          Registros.salvar(pr + 1);
-          Registros.salvarF(prf + 1);
-          exp.toCode(pr + 1, prf+1, proxI);
-          lvalue.modifica(pr, prf);
-          Registros.restaurar(pr + 1);
-          Registros.restaurarF(prf + 1);
-        
+      lvalue.cargaDireccion(pr,prf, proxI);
+      Registros.salvar(pr + 1);
+      Registros.salvarF(prf + 1);
+      exp.toCode(pr + 1, prf+1, proxI);
+      lvalue.modifica(pr, prf);
+      Registros.restaurar(pr + 1);
+      Registros.restaurarF(prf + 1);
     }
 
     return false;
@@ -716,7 +766,7 @@ class ASTInstFuncion extends ASTInst {
     }
 
     //Empilo parametros
-    if (param != null)
+    if (param.size() != 0)
       Registros.empilarParametros(param, procedimiento);
 
     //llamo Al otro procedimiento Guardo la dirección de retorno
@@ -727,7 +777,7 @@ class ASTInstFuncion extends ASTInst {
     Global.out.println("lw $ra, ($sp)");
     
     //Desempilo Parametros
-    if (param != null)
+    if (param.size() != 0)
       Registros.desempilarParametros(procedimiento);
    
     //Aumento el tamaño del apuntador 
@@ -738,11 +788,11 @@ class ASTInstFuncion extends ASTInst {
     //Restauro Registros
     Global.out.println(Registros.restaurarRegistrosLlamador(pr));
 
+
     return true;
   }
 
   tripleta tam(tripleta tr){
-    //System.out.println("Verificar la funcion tam de ASTInstFuncion");
     return tr;
   }
 }
@@ -768,11 +818,29 @@ class ASTInstReturn extends ASTInst{
   boolean toCode(int pr, int prf, String p,String jumpBreak){
     String reg = Registros.T[pr % Registros.maxT];
     String reg2 = Registros.T[pr + 1 % Registros.maxT];
-    exp.toCode(pr, prf, p);
-    Global.out.println("lw "+reg2+", " + retParam + "($fp)");
-    Global.out.println("sw "+reg+", (" + reg2 + ")");
-    Global.out.println("move $s1, "+reg+"");
-    System.out.println(retParam);
+    Global.out.println("lw "+reg+", " + retParam + "($fp)");
+    
+    // Depende de si es un tipo compuesto o no.
+    if (!exp.getTip().isTipoCompuesto()){
+      exp.toCode(pr+1, prf+1, p);
+      Global.out.println("sw " + reg2 + ", ( "+ reg  + ")");
+    } else {
+      String reg3 = Registros.T[pr + 2 % Registros.maxT];
+      int tamano = exp.getTip().tam;
+      ((ASTExprLValue) exp).cargaDireccion(pr+1, prf+1, "algo");
+
+      //Se inicializa en el ultimo elemento
+      Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
+      Global.out.println("sw " + reg3 + ", (" + reg + ")");
+      
+      //Se va copiando uno a uno cada elemento
+      for (int cont = 4; cont < tamano; cont += 4){
+        Global.out.println("add " + reg + ", "+ reg +", -" + 4);
+        Global.out.println("add " + reg2 + ", "+ reg2 +", -" + 4);
+        Global.out.println("lw " + reg3 + ", (" + reg2 + ")");
+        Global.out.println("sw " + reg3 + ", (" + reg + ")");
+      }
+    }
     
     Global.out.println("j " + p);
     return true;

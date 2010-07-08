@@ -17,6 +17,8 @@ parser code {:
   Registros reg = new Registros();
   SymTable list_articles= new SymTable(null);
   LinkedList pila = new LinkedList();
+  Hashtable mensajes = new Hashtable();
+
   int SRegistros = 0;
   int MaxSRegistros = 7;
   int vg = 0;
@@ -127,6 +129,7 @@ terminal READ_FLOAT;
 terminal READ_STRING;
 terminal READ_BOOL;
 
+
 /* Non terminals */
 non terminal ASTExpr expr;
 non terminal String opruna;
@@ -181,6 +184,7 @@ non terminal structUnion lista_union;
 //non terminal LinkedList parametros;
 non terminal ASTTipoStruct st;
 non terminal ASTInst imprime;
+non terminal ASTInst lee;
 non terminal seleccion1;
 non terminal switche1;
 non terminal LinkedList case1;
@@ -213,7 +217,7 @@ inicial ::=  promesas LLLAVE {:parser.bloque = new ASTInstBloque(null); :}
             {:if(!parser.funciones.equals(parser.promesas))
                 throw new PromesaNoDeclaradaException(parser.scanner.linea(), parser.scanner.columna());
               //System.out.println(parser.principal);
-              parser.principal.toCode(0,0);
+              parser.principal.toCode(0,0, parser.mensajes);
             :}
 ;
 
@@ -258,10 +262,10 @@ procedimiento ::= procedimiento:v1
                   RPAREN 
                   bloqueb:v5 
                     {:if (v2.isVoid()){
-                        if (v5[0])
+                        if (v5[0].booleanValue())
                           throw new FuncionVoidConReturnException(v3,parser.scanner.linea(),parser.scanner.columna());
                       }else{
-                        if (!v5[1])
+                        if (!v5[1].booleanValue())
                           throw new FuncionNoVoidSinReturnException(v3,parser.scanner.linea(),parser.scanner.columna());
                       }
                       Proc a = new Proc(v3,v2,v4, parser.bloque);
@@ -337,7 +341,7 @@ bloqueb ::=LLLAVE {: parser.bloque = new ASTInstBloque(parser.bloque);
                                         :}
 ;
 
-bloqueR ::=LLLAVE   stmtsRS RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
+bloqueR ::=LLLAVE stmtsRS RLLAVE  {: parser.bloque.addTable(parser.tablaVar);
                                     parser.tablaVar = parser.tablaVar.prev ;  
                                  :}
 ;
@@ -482,13 +486,15 @@ stmts ::= stmts:v1 stmt:v2 PYC  {: RESULT = v1 ; if (v2 != null) { RESULT.add(v2
 /*Esta funcion devuelve un arreglo de Bool de dos elementos, el primero indica si la funcion tiene
 un return o no, y el segundo indica si la ultima instruccion es un return
 */
-stmtsb ::= stmtsb:v1 stmtb:v2 PYC {:RESULT = v1;
-                                    RESULT[0] = RESULT[0] || v2;
+stmtsb ::= stmtsb:v1 stmtb:v2 PYC {:
+                                    RESULT = v1;
+                                    RESULT[0] = new Boolean(RESULT[0].booleanValue() || v2.booleanValue());
                                     RESULT[1] = v2;
                                   :}
 | stmtb:v1 PYC {: RESULT = new Boolean[2];
                   RESULT[0]=v1;
-                  RESULT[1]=v1; :}
+                  RESULT[1]=v1; 
+              :}
 ;
 
 /* Devuelve un booleano que indica si la instruccion es RETURN o no */
@@ -498,13 +504,13 @@ stmtb ::=  RETURN expr:v1
                     ir.retParam = parser.tablaVar.retParam();
                     //System.out.println(parser.tablaVar.tamParam());
                     parser.bloque.add(ir); 
-                    RESULT = true;
+                    RESULT = new Boolean(true);
                   :} 
 | RETURN CHAR:v1 {:ASTInstReturn ir = new ASTInstReturn(new ASTExprCharCtte(v1.toCharArray()[0]));
                     parser.bloque.add(ir); 
-                    RESULT = true;
+                    RESULT = new Boolean(true);
                   :}
-| stmt {: RESULT = false; :}
+| stmt {: RESULT = new Boolean(false); :}
 ;
 
 stmt ::= asignacion             
@@ -516,6 +522,7 @@ stmt ::= asignacion
 | llamadafuncion:v1 {:    parser.bloque.add((ASTInst) v1); :}
 | deftipo
 | imprime
+| lee
 ;
 
 read_int ::= READ_INT
@@ -536,7 +543,12 @@ read_float ::= READ_FLOAT
 
 imprime ::= PRINT LPAREN expr:v1 RPAREN {:
                                                 parser.bloque.add(new ASTInstImprime(v1)); 
-                                              
+                                        :}
+;
+
+
+lee ::= READ LPAREN expr:v1 RPAREN {:
+                                                parser.bloque.add(new ASTInstLee(v1)); 
                                         :}
 ;
 
@@ -554,17 +566,17 @@ llamadafuncion ::= ID:v1 LPAREN parame:v2 RPAREN
                                                     throw new FuncionNoDeclaradaException(v1,parser.scanner.linea(),parser.scanner.columna()); 
                                                   if (!parser.promesas.param(v1,v2))
                                                     throw new ParametrosException(v1,parser.scanner.linea(),parser.scanner.columna());
-                                                  String ret = parser.funciones.getRet(v1).toString(); 
-                                                  Proc procInfo = parser.funciones.get(v1);                                                 
+                                                  Proc procInfo = parser.funciones.get(v1);
+                                                  if (!procInfo.checkParameterForLValues(v2))
+                                                    throw new NotLValuesException(v1,parser.scanner.linea(),parser.scanner.columna());
                                                   ASTInstFuncion f1 = new ASTInstFuncion(v2, procInfo);
+                                                  //if (f1.checkLValues()){
+                                                    //throw new NotLValueException(v1,parser.scanner.linea(),parser.scanner.columna());
+                                                  //}
                                                   if (procInfo.retType.isVoid()){
                                                     RESULT = f1;
                                                   } else
                                                     RESULT = new ASTExprFun(procInfo.retType, f1); 
-                                                    System.out.println(procInfo.retType);
-                                                     
-                                                  //Por que si es void no se agrega la llamada a función?
-                                                  //if (!ret.equals("VOID"))
                                                 :} 
 ;
 
@@ -812,7 +824,9 @@ stmtsRS ::= stmtsRS:v1 stmtsR:v2 PYC
 
 seleccion1 ::= IF expr:v1 {:parser.bloque = new ASTInstBloque(parser.bloque); 
                            parser.tablaVar = new SymTable(parser.tablaVar);
-                         :} bloqueR elseif:v3 
+                         :} 
+                          bloqueR 
+                          elseif:v3 
 {:if (!v1.getTip().isBool())
       throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
     parser.bloque.padre.add(new ASTInstIf(parser.bloque,v1,v3));
@@ -820,9 +834,8 @@ seleccion1 ::= IF expr:v1 {:parser.bloque = new ASTInstBloque(parser.bloque);
 :}
 ;
 
-seleccion ::= IF expr:v1 {:parser.bloque = new ASTInstBloque(parser.bloque); 
-                           parser.tablaVar = new SymTable(parser.tablaVar);
-                         :} bloque elseif:v3 
+seleccion ::= IF expr:v1  
+                          bloque elseif:v3 
 {:if (!v1.getTip().isBool())
       throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
     parser.bloque.padre.add(new ASTInstIf(parser.bloque,v1,v3));
@@ -882,9 +895,14 @@ expr ::= expr:v1 PLUS expr:v3
                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
                                if (v1.getTip().isNumber()) 
                                   RESULT = new ASTExprAritBin("+", v1, v3);
-                               else if (v1.getTip().isString())
-                                  RESULT = new ASTExprStringBin((ASTExprString) v1,(ASTExprString) v3);
-
+                               else if (v1.getTip().isString()){
+                                  String msj = Global.nuevoMensaje(); 
+                                  String msj1 =(String) parser.mensajes.get(((ASTExprString)v1).etiqueta); 
+                                  String msj2 =(String) parser.mensajes.get(((ASTExprString)v3).etiqueta); 
+                                  parser.mensajes.put(msj, msj1 + msj2);
+ 
+                                  RESULT = new ASTExprStringBin(msj, (ASTExprString) v1,(ASTExprString) v3);
+                                }
                              :}
 
 |  expr:v1 TIMES expr:v3 
@@ -959,7 +977,7 @@ expr ::= expr:v1 PLUS expr:v3
                                 else if (v1.getTip().isBool())
                                   RESULT = new ASTExprBoolBinBool("IGUALIGUAL",v1,v3);
                                 else if (v1.getTip().isChar())
-                                  RESULT = new ASTExprBoolBinChar(v1,v3);
+                                  RESULT = new ASTExprBoolBinChar("IGUALIGUAL", v1,v3);
                                 else if (v1.getTip().isString())
                                   RESULT = new ASTExprBoolBinString(v1,v3);
                                 else if (v1.getTip().isStruct())
@@ -975,8 +993,10 @@ expr ::= expr:v1 PLUS expr:v3
                                 else if (v1.getTip().isBool())
                                   RESULT = new ASTExprBoolBinBool("DIFERENTE",v1,v3);
                                 else if (v1.getTip().isChar())
-                                  RESULT = new ASTExprBoolUna(new ASTExprBoolBinChar(v1,v3));
+                                  //Por que???
+                                  RESULT = new ASTExprBoolUna(new ASTExprBoolBinChar("DIFERENTE", v1,v3));
                                 else if (v1.getTip().isString())
+                                  //Por que???
                                   RESULT = new ASTExprBoolUna(new ASTExprBoolBinString(v1,v3));
                               :}
 
@@ -1008,6 +1028,35 @@ expr ::= expr:v1 PLUS expr:v3
                                 RESULT = new ASTExprBoolBinBool("O", v1, v3);
                               :}
 
+|  TKCHAR:v1 IGUALIGUAL:v2 TKCHAR:v3       {: RESULT = new ASTExprBoolBinChar("IGUALIGUAL", new ASTExprCharCtte(v1.toCharArray()[0]),new ASTExprCharCtte(v3.toCharArray()[0])); :}
+|  expr:v1 IGUALIGUAL:v2 TKCHAR:v3          {:   
+                                            if (v1.getTip().isChar())
+                                              RESULT = new ASTExprBoolBinChar("IGUALIGUAL", v1,new ASTExprCharCtte(v3.toCharArray()[0])); 
+                                            else
+                                              throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                          :}
+|  TKCHAR:v1 IGUALIGUAL:v2 expr:v3          {: 
+                                            if (v3.getTip().isChar())
+                                              RESULT = new ASTExprBoolBinChar("IGUALIGUAL", new ASTExprCharCtte(v1.toCharArray()[0]),v3); 
+                                            else
+                                              throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                        :}
+|  TKCHAR:v1 DIFERENTE:v2 TKCHAR:v3       {: RESULT = new ASTExprBoolBinChar("DIFERENTE",new ASTExprCharCtte(v1.toCharArray()[0]),new ASTExprCharCtte(v3.toCharArray()[0])); :}
+|  expr:v1 DIFERENTE:v2 TKCHAR:v3          {:   
+                                            if (v1.getTip().isChar())
+                                              RESULT = new ASTExprBoolBinChar("DIFERENTE",v1,new ASTExprCharCtte(v3.toCharArray()[0])); 
+                                            else
+                                              throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                          :}
+|  TKCHAR:v1 DIFERENTE:v2 expr:v3          {: 
+                                            if (v3.getTip().isChar())
+                                              RESULT = new ASTExprBoolBinChar("DIFERENTE",new ASTExprCharCtte(v1.toCharArray()[0]),v3); 
+                                            else
+                                              throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                        :}
+
+
+
 | opruna:v1 expr:v2 
 
                               {:if (v1.equals("MINUS")){
@@ -1033,7 +1082,7 @@ expr ::= expr:v1 PLUS expr:v3
 
 | TKFLOAT:v1 {: RESULT = new ASTExprAritCtteFloat( Float.valueOf(v1).floatValue()) ;:}
 
-| TKSTRING:v1 {: RESULT = new ASTExprStringCtte(v1);:}
+| TKSTRING:v1 {: String msj = Global.nuevoMensaje(); parser.mensajes.put(msj, v1); RESULT = new ASTExprStringCtte(msj, v1);:}
 
 | TRUE  {:RESULT = new ASTExprBoolCtte(true); :}
 

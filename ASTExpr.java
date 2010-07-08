@@ -79,8 +79,7 @@ class ASTExprAritBin extends ASTExprArit {
     if (izqa.getTip().isFloat() && dera.getTip().isEntero()){
       this.izq = izqa;
       this.der = new ASTExprCast(dera, new ASTTipoFloat());
-    }
-    if (izqa.getTip().isEntero() && dera.getTip().isFloat()){
+    } else if (izqa.getTip().isEntero() && dera.getTip().isFloat()){
       this.der = dera;
       this.izq = new ASTExprCast(izqa, new ASTTipoFloat());
     }
@@ -88,7 +87,6 @@ class ASTExprAritBin extends ASTExprArit {
       this.izq = izqa;
       this.der = dera;
     }
-
     //Setea el tipo de la expresión binaria
     this.tipo = this.izq.getTip(); 
   }
@@ -408,60 +406,96 @@ class ASTExprBoolBinBool extends ASTExprBool {
 class ASTExprBoolBinString extends ASTExprBool { ASTExpr izq; ASTExpr der;
   ASTTipo tipo;
 
-  //@ invariant izq!=null; @ invariant der!=null; @ invariant tipo!=null;
+  //@ invariant izq!=null; 
+  //@ invariant der!=null; 
+  //@ invariant tipo!=null;
 
   //@requires izqa!=null && dera!=null;
-  ASTExprBoolBinString ( ASTExpr izqa, ASTExpr dera ){ this.izq = izqa;
-    this.der = dera; this.tipo = new ASTTipoBool(); }
+  ASTExprBoolBinString ( ASTExpr izqa, ASTExpr dera ){ 
+    this.izq = izqa;
+    this.der = dera; 
+    this.tipo = new ASTTipoBool(); 
+  }
+
+  public  String toString(){ 
+    return " ==\n "+izq+" "+der; 
+  }
+
+  ASTTipo getTip(){ 
+    return tipo; 
+  }
+
+  boolean Id(){ 
+    return izq instanceof ASTExprId || der instanceof ASTExprId || izq.Id() || der.Id(); 
+  }
+
+  boolean toCode(int pr, int prf, String a){ return false; 
+  } 
+}
+
+class ASTExprBoolBinChar extends ASTExprBool { ASTExpr izq; ASTExpr der;
+  ASTTipo tipo;
+  String op;
+
+  //@ invariant izq!=null; 
+  //@ invariant der!=null; 
+  //@ invariant tipo!=null;
+
+  //@requires izqa!=null && dera!=null;
+  ASTExprBoolBinChar ( String op, ASTExpr izqa, ASTExpr dera){ 
+    this.op = op;
+    this.izq = izqa; 
+    this.der = dera; 
+    this.tipo = new ASTTipoBool(); 
+  }
+
+  public  String toString(){ return op + " ==\n "+izq+" "+der; }
+
+  ASTTipo getTip(){ return tipo; }
+
+  boolean Id(){ 
+    return izq instanceof ASTExprId || der instanceof ASTExprId || izq.Id() || der.Id(); 
+  }
+
+  boolean toCode(int pr, int prf, String a){ 
+    String actual= Registros.T[(pr) % Registros.maxT ]; 
+    Global.out.println(Registros.salvar(pr+1));
+    izq.toCode(pr,prf,a); der.toCode(pr+1,prf,a); 
+    Global.out.println("seq "+actual+" , "+actual+" , "+Registros.T[(pr+1)%Registros.maxT]);
+    Global.out.println(Registros.restaurar(pr+1)); 
+    return false; 
+  } 
+}
 
 
-    public  String toString(){ return " ==\n "+izq+" "+der; }
-
-    ASTTipo getTip(){ return tipo; }
-
-    boolean Id(){ return izq instanceof ASTExprId || der instanceof ASTExprId ||
-      izq.Id() || der.Id(); }
-
-
-    boolean toCode(int pr, int prf, String a){ return false; } }
-
-    class ASTExprBoolBinChar extends ASTExprBool { ASTExpr izq; ASTExpr der;
-      ASTTipo tipo;
-
-      //@ invariant izq!=null; @ invariant der!=null; @ invariant tipo!=null;
-
-      //@requires izqa!=null && dera!=null;
-      ASTExprBoolBinChar ( ASTExpr izqa, ASTExpr dera){ this.izq = izqa; this.der =
-        dera; this.tipo = new ASTTipoBool(); }
-
-      public  String toString(){ return " ==\n "+izq+" "+der; }
-
-      ASTTipo getTip(){ return tipo; }
-
-      boolean Id(){ return izq instanceof ASTExprId || der instanceof ASTExprId ||
-        izq.Id() || der.Id(); }
-
-      boolean toCode(int pr, int prf, String a){ 
-        String actual= Registros.T[(pr) % Registros.maxT ]; 
-        Global.out.println(Registros.salvar(pr+1));
-        izq.toCode(pr,prf,a); der.toCode(pr+1,prf,a); 
-        Global.out.println("seq "+actual+" , "+actual+" , "+Registros.T[(pr+1)%Registros.maxT]);
-        Global.out.println(Registros.restaurar(pr+1)); 
-        return false; 
-      } 
-    }
-
-
-abstract class ASTExprString extends ASTExpr { }
+abstract class ASTExprString extends ASTExpr {
+  String etiqueta;
+}
 
 // Chequear que ambos sean string
-class ASTExprStringBin extends ASTExprString{ ASTExpr izq; ASTExpr der; ASTTipo
-  tipo;
+class ASTExprStringBin extends ASTExprString{
+  ASTExpr izq; 
+  ASTExpr der; 
+  ASTTipo tipo;
   //@ invariant izq!=null; @ invariant der!=null; @ invariant tipo!=null;
 
   //@requires izqa!=null && dera!=null;
-  ASTExprStringBin( ASTExpr izqa, ASTExpr dera){ this.izq = izqa; this.der =
-    dera; this.tipo = new ASTTipoString(); }
+  ASTExprStringBin(String e, ASTExpr izqa, ASTExpr dera){ 
+    this.etiqueta = e;
+    this.izq = izqa; 
+    this.der = dera;
+     
+    this.tipo = new ASTTipoString(); 
+  }
+
+  //Sin etiqueta
+  ASTExprStringBin(ASTExpr izqa, ASTExpr dera){ 
+    this.izq = izqa; 
+    this.der = dera;
+     
+    this.tipo = new ASTTipoString(); 
+  }
+
 
   public /*@ non_null @*/ String toString(){ return "+\n "+izq+" "+der; }
 
@@ -517,18 +551,24 @@ class ASTExprStringBin extends ASTExprString{ ASTExpr izq; ASTExpr der; ASTTipo
   }
 }
 
-  class ASTExprStringCtte extends ASTExprString { String ctte; ASTTipo tipo;
-    //@ invariant tipo!=null;
+class ASTExprStringCtte extends ASTExprString { 
+  String ctte; 
+  ASTTipo tipo;
+  //@ invariant tipo!=null;
 
-    ASTExprStringCtte(String a){ ctte = a; this.tipo = new ASTTipoString(); }
+  ASTExprStringCtte(String label, String a){ 
+    ctte = a;
+    etiqueta = label; 
+    this.tipo = new ASTTipoString(); 
+  }
 
-    public /*@ non_null @*/ String toString(){ return ctte; }
+  public /*@ non_null @*/ String toString(){ 
+    return ctte; 
+  }
 
-    boolean Id(){ return false; }
-
-    ASTTipo getTip(){
-      return tipo;
-    }
+  boolean Id(){ 
+    return false; 
+  }
 
     String getString(){
       return ctte;
@@ -552,8 +592,10 @@ class ASTExprStringBin extends ASTExprString{ ASTExpr izq; ASTExpr der; ASTTipo
       }
       return false;
     }
-
+  ASTTipo getTip(){
+    return tipo;
   }
+}
 
 abstract class ASTExprChar extends ASTExpr{
 }
@@ -752,7 +794,7 @@ class ASTExprArrayElem extends ASTExprLValue {
     Global.out.println("blez " + reg3 + ", " + Global.error);
 
     //Operacion de Indice 
-    Global.out.println("li " + reg3 +", "+ ((ASTTipoArray)lvalue.getTip()).subclass.tam);
+    Global.out.println("li " + reg3 +", -"+ ((ASTTipoArray)lvalue.getTip()).subclass.tam);
     Global.out.println("mul " + reg2 +", "+reg2+", " + reg3);
 
     Global.out.println(Registros.restaurar(pr+2));
@@ -786,15 +828,14 @@ abstract class ASTExprLValue extends ASTExpr{
     if (this instanceof ASTExprLValue){ 
       if (this instanceof ASTExprId){ 
         if (!inf.onreg)
-          if (inf.obj.isEntero()){
-            Global.out.println("lw " + reg + ",(" + reg + ")" );
-          } else if  (inf.obj.isFloat()){
+          if  (inf.obj.isFloat()){
             Global.out.println("l.s " + regF + ",(" + reg + ")" );
-          }
-      } else if (t.isEntero()){
-        Global.out.println("lw " + reg + ",(" + reg + ")" );
+          } else
+            Global.out.println("lw " + reg + ",(" + reg + ")" );
       } else if (t.isFloat()){
         Global.out.println("l.s " + regF + ",(" + reg + ")" );
+      } else {
+        Global.out.println("lw " + reg + ",(" + reg + ")" );
       }
     }
   }
@@ -934,31 +975,10 @@ class ASTExprStructElem extends ASTExprLValue {
     Global.out.println(Registros.salvar(pr+1));
     Global.out.println(Registros.salvar(pr+2));
 
-    //Cargar el valor del discriminante
-    /*Suponiendo que el discriminante es entero. 
-      ASTTipoStruct tipoS = ((ASTTipoStruct) lvalue.getTip());
-      structUnion su = tipoS.union;
-      info i = tipoS.find(su.discriminante);
-      Global.out.println("li "+ reg2 + "," + i.desp);
-
-      int i = 0;
-      for (Enumeration e = su.moreST.keys(); e.hasMoreElements();){
-      Global.out.println("carga: ");
-      Global.out.println("li "+ reg3 + "," + e.nextElement());
-      Global.out.println("bneq "+ reg2 + "," + reg3 + ", branch" + (i+1));
-
-      Global.out.println("j carga");
-      i++;
-      }
-
-      Global.out.println("li "+ reg2 + "," + inf.desp);
-      Global.out.println("li "+ reg3 + "," + su.tam);
-      Global.out.println("beq "+ reg2 + "," + reg3);
-
-      Global.out.println("carga: ");
-      */
+    //Chequeo dinamico del union
+ 
     //Cargo el desplazamiento del atributo
-    Global.out.println("li "+ reg2 + "," + inf.desp);
+    Global.out.println("li "+ reg2 + ",-" + inf.desp);
 
     //Carga la direccion del lvalue
     Global.out.println("add "+ reg + "," + reg + "," +reg2);
@@ -968,15 +988,16 @@ class ASTExprStructElem extends ASTExprLValue {
   //Modifica el valor en la referencia
   void modifica(int pr, int prf){
     String actual = Registros.T[pr % Registros.maxT], siguiente="", move = "", store ="";
-    if (tipo.isEntero()){
-      siguiente = Registros.T[(pr + 1) % Registros.maxT];
-      move = "move ";
-      store = "sw ";
-    } else if (tipo.isFloat()){
+       if (tipo.isFloat()){
       siguiente = Registros.F[(prf + 1) % Registros.maxF];
       move = "mov.s ";
       store = "s.s ";
-    }
+    } else {
+      siguiente = Registros.T[(pr + 1) % Registros.maxT];
+      move = "move ";
+      store = "sw ";
+    } 
+
 
     //Toma en cuenta Si la variable esta en el main o si esta en la pila
     Global.out.println(store + siguiente + ", ("+ actual + ")" );
@@ -991,7 +1012,7 @@ class ASTExprStructElem extends ASTExprLValue {
   }
 }
 
-class ASTExprFun extends ASTExpr {
+class ASTExprFun extends ASTExprLValue {
   ASTInst ai;
   ASTTipo tipo;
 
@@ -1007,7 +1028,7 @@ class ASTExprFun extends ASTExpr {
   boolean toCode(int pr, int prf, String proxI){
     String reg = Registros.T[pr % Registros.maxT];
     ai.toCode(pr, prf, proxI,"fin");
-    Global.out.println("add $sp, $sp, 4");
+    Global.out.println("add $sp, $sp, " + tipo.tam);
     Global.out.println("lw " +reg +", ($sp)");
     
     return false;
@@ -1016,6 +1037,22 @@ class ASTExprFun extends ASTExpr {
   boolean Id(){
     return false;
   }
+
+  void cargaDireccion(int pr, int prf, String a) {
+    String reg = Registros.T[pr % Registros.maxT];
+    ai.toCode(pr, prf, a, "fin");
+    Global.out.println("add $sp, $sp, " + tipo.tam);
+    Global.out.println("la " +reg +", ($sp)");
+  }
+
+  info getInfo(){
+    return null;
+  }
+
+  String getId(){
+    return null;
+  }
+
 
 }
 

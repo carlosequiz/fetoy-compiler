@@ -84,7 +84,7 @@ class SymTable {
   }
 
   int retParam(){
-    return 8 + tamParam();
+    return 12 + tamParam();
   }
 
   int tamParam(){
@@ -92,7 +92,11 @@ class SymTable {
     for ( Enumeration a = table.elements(); a.hasMoreElements() ;){
       info y = (info) a.nextElement();
       if (y.onparam) {
-        tamParam += y.obj.tam;
+        if (y.tipoParametro.equals("valor")){
+          tamParam += y.obj.tam;
+        } else {
+          tamParam += 4;
+        }
       }
     }
     return tamParam; 
@@ -125,8 +129,17 @@ class SymTable {
           System.out.println("HAY UN STRING,revisar Symtable.java x la cantidad de memoria");
         } else {
             if (y.onparam){
-              y.desp = i2;
-              i2 += y.obj.tam;
+              if (y.tipoParametro.equals("valor")){
+                if (y.obj.isTipoCompuesto()){
+                  y.desp = i2 + y.obj.tam - 4;
+                } else {
+                  y.desp = i2;  
+                }
+                i2 += y.obj.tam;
+              } else {
+                y.desp = i2;
+                i2 += 4;
+              }
             } else {
               y.desp = i;
               i += y.obj.tam;

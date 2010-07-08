@@ -13,8 +13,11 @@ public class Main {
   public static void main(String argv[])
     throws java.io.IOException, java.lang.Exception
   {
-    //Global.out = System.out ;
-    Global.out = new PrintStream(new FileOutputStream(argv[1]));
+    if (argv[1].equals("x"))
+      Global.out = new PrintStream(new FileOutputStream("/home/e3/elias.s"));
+    else
+      Global.out = new PrintStream(System.out);
+
     Lexer scanner = null;
     try {
       scanner = new Lexer( new java.io.FileReader(argv[0]) );

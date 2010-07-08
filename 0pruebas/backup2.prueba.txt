@@ -1,12 +1,5 @@
-sub int fun();
 {
-  sub int fun(){
-    return 3;
-  }
-
   sub main {
-    int f = 4;
-    f = fun();
-    print(f);
+    print("El valor \t de fibonacci\t de ");
   }
 }
