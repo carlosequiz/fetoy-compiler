@@ -184,7 +184,6 @@ non terminal structUnion lista_union;
 //non terminal LinkedList parametros;
 non terminal ASTTipoStruct st;
 non terminal ASTInst imprime;
-non terminal ASTInst lee;
 non terminal seleccion1;
 non terminal switche1;
 non terminal LinkedList case1;
@@ -527,7 +526,6 @@ stmt ::= asignacion
                     :}
 | deftipo
 | imprime
-| lee
 ;
 
 read_int ::= READ_INT
@@ -548,12 +546,6 @@ read_float ::= READ_FLOAT
 
 imprime ::= PRINT LPAREN expr:v1 RPAREN {:
                                                 parser.bloque.add(new ASTInstImprime(v1)); 
-                                        :}
-;
-
-
-lee ::= READ LPAREN expr:v1 RPAREN {:
-                                                parser.bloque.add(new ASTInstLee(v1)); 
                                         :}
 ;
 

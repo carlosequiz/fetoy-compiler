@@ -522,16 +522,17 @@ class ASTExprStringBin extends ASTExprString{
     String sreg = Registros.T[(pr+2) % Registros.maxT];
     //Registro donde se iterara el String.
     String dreg = Registros.T[(pr+3) % Registros.maxT];
-    //Registros donde se llevara el tamano de lo dos string/
+    //Registros donde se llevara el tamano de lo dos string.
     String creg = Registros.T[(pr+4) % Registros.maxT];
 
+/*
     Global.out.println("li "+creg+", -1");
     Global.out.println("mv "+dreg+" , "+reg);
     Global.out.println("add "+dreg+" , "+dreg+" , -1");
     Global.out.println(NE+":");
     Global.out.println("add "+dreg+" , "+dreg+" , 1");
     Global.out.println("add "+creg+" , "+creg+" , 1");
-    Global.out.println("lb "+sreg"+ , 0("+dreg+")");
+    Global.out.println("lb "+sreg+"+ , 0("+dreg+")");
     Global.out.println("beqz "+sreg+" "+NE2);
     Global.out.println("j "+NE);
     Global.out.println(NE2+":");
@@ -547,6 +548,7 @@ class ASTExprStringBin extends ASTExprString{
     Global.out.println(NE4+":");
     Global.out.println("li $v0 9\nsyscall");
     Global.out.println("
+*/
     return false;
   }
 }

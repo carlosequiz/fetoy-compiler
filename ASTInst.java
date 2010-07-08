@@ -49,12 +49,13 @@ class ASTInstImprime extends ASTInst {
         Global.out.println("move $a0, " + reg);
         Global.out.println("syscall");
       } else if  (tipo.isChar()){
+        //Aqui estoy suponiendo que en pr me viene el acii del char que quiero
+        //imprimir... y no la direccion de memoria donde esta el char que quiero imprimir.
         Global.out.println("li $a0 2\nli $v0 9\nsyscall");
         Global.out.println("sb "+reg+" 0($v0)");
         Global.out.println("move $a0, $v0");
         Global.out.println("li $v0, 4\nsyscall");
       } else if  (tipo.isString()){
-<<<<<<< HEAD
         //Supongo que en pr me viene la direccion del string que tengo que imprimir.
         /*//Tamano a reservar en memoria para guardar el string para imprimirlo.
         //el +1 es para que sepa el final de string.
@@ -74,10 +75,6 @@ class ASTInstImprime extends ASTInst {
         //Copiamos la direccion del string que acabamos de guardar en $a0 y mandamos a imprimir.
         Global.out.println("move $a0, "+reg);
         Global.out.println("li $v0, 4\nsyscall");
-=======
-        Global.out.println("li $v0, 4");
-        Global.out.println("la $a0, " + ((ASTExprStringCtte) expr).etiqueta);
-        Global.out.println("syscall");
       }
 
     return false;
@@ -122,7 +119,6 @@ class ASTInstLee extends ASTInst {
       } else if  (tipo.isString()){
         Global.out.println("li $v0, 4");
         Global.out.println("li $a0, ");
->>>>>>> aa55a327a2e80e1ade3bf73787a98730d5250f0c
       }
 
     return false;
