@@ -1151,13 +1151,15 @@ class ASTExprReadBool extends ASTExpr {
     
   boolean toCode(int pr, int prf,String proxI){
     String reg = Registros.T[pr % Registros.maxT];
+    String b = Global.nuevaEtiqueta();
     Global.out.println("li $v0 , 5\nsyscall");
     Global.out.println("move "+reg+" $v0");
-    Global.out.println("beqz $v0 "+proxI);
+    Global.out.println("beqz $v0 "+b);
     Global.out.println("li $v0 , 1");
-    Global.out.println("beq $v0 "+reg+" "+proxI);
+    Global.out.println("beq $v0 "+reg+" "+b);
     Global.out.println("li $v0, 4\nla $a0 ,readBool\nsyscall");
     Global.out.println("j fin");
+    Global.out.println(b+":");
     return true;
   }
 
