@@ -314,7 +314,7 @@ class ASTExprBoolUna extends ASTExprBool { ASTExpr hijo; ASTTipo tipo;
     boolean us =hijo.toCode(pr,prf,a);
     Global.out.println("beqz "+y+" "+NE); 
     Global.out.println("li "+y+" 0\nj "+NE2); 
-    Global.out.println(NE+":li "+y+" 1\n"+NE2+":"); 
+    Global.out.println(NE+":\nli "+y+" 1\n"+NE2+":"); 
     return us; 
   } 
 }
@@ -566,7 +566,6 @@ class ASTExprStringBin extends ASTExprString{
     Global.out.println(NE5+":");
     Global.out.println("add "+reg+" , "+reg+" , 1");
     Global.out.println("add "+creg+" , "+creg+" , 1");
-//    Global.out.println("add "+reg+" , "+reg+" ,"+" 1");
     Global.out.println("lb "+sreg+" , 0("+reg+")");
     Global.out.println("beqz "+sreg+" "+NE6);
     Global.out.println("sb "+sreg+" 0("+creg+")");
@@ -927,7 +926,6 @@ class ASTExprId extends ASTExprLValue {
   }
 
   void cargaDireccion(int pr, int prf, String a){
-//    System.out.println("cadfafa");
     inf.cargaDireccion(pr,prf);
   }
 
@@ -994,7 +992,6 @@ class ASTExprStructElem extends ASTExprLValue {
 
 
   public /*@ non_null @*/ String toString(){
-//    System.out.println("p");
     return  lvalue + "." + id;
   }
 

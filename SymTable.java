@@ -125,9 +125,6 @@ class SymTable {
       String ria  = (String) a.nextElement();
       y = (info) table.get(ria);
       if  ( y != null && y.obj != null)
-        if ( y.obj.isString()) {
-          System.out.println("HAY UN STRING,revisar Symtable.java x la cantidad de memoria");
-        } else {
             if (y.onparam){
               if (y.tipoParametro.equals("valor")){
                 if (y.obj.isTipoCompuesto()){
@@ -144,45 +141,6 @@ class SymTable {
               y.desp = i;
               i += y.obj.tam;
             }
-        }
-    /* 
-    
-       Esto era asignando registros a las variables locales enteras y flotantes
-        
-      if ( y.obj.isEntero()){
-          if (regS < Registros.S.length){
-            y.desp = regS;
-            y.onreg = true;
-            regS++;
-          }
-          else{
-            y.desp = i;
-            i += y.obj.tam;
-          }
-        }
-        else if (y.obj.isFloat()){
-          
-          if (regF < Registros.FS.length){
-            y.desp = regF;
-            regF++;
-            y.onreg = true;
-          }
-          else{
-            y.desp = i;
-            i += y.obj.tam;
-          }
-        }
-        else if (y.obj.isChar() || y.obj.isBool() || y.obj.isArray()){
-          y.desp = i;
-          i += y.obj.tam;
-        }
-        else if (y.obj.isString()){
-        }
-        else if (y.obj.isStruct()){
-          y.desp = i;
-          i += y.obj.tam;
-        }
-  */
     }
     return new tripleta(i, regS, regF);
   }

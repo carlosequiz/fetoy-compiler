@@ -182,7 +182,6 @@ non terminal ASTExprArrayElem elem_array;
 non terminal deftipo; 
 non terminal structUnion union; 
 non terminal structUnion lista_union; 
-//non terminal LinkedList parametros;
 non terminal ASTTipoStruct st;
 non terminal ASTInst imprime;
 non terminal seleccion1;
@@ -458,15 +457,12 @@ union ::= UNION tipo:v1 ID:v2 LLLAVE lista_union:v3 RLLAVE
                throw new SwitchException(parser.scanner.linea(), parser.scanner.columna());
              
              RESULT = v3; 
-//             System.out.println("union458expresion");
-//             System.out.println(v3);
           :}
 ;
 
 lista_union ::= lista_union:v1 expr:v2 DOSPUNTOS LLLAVE lista_estructura:v3 RLLAVE 
     {:if (!v1.agregar(v2, v3.st))
         throw new Exception("Se repiten los id");
-//System.out.println("464expresion");
       v3.agregarVar(v2);
       RESULT = v1;
     :}

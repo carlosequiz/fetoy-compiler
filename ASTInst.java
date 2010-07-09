@@ -35,12 +35,10 @@ class ASTInstImprime extends ASTInst {
     //Recibe lo que este en result, y lo imprime de acuerdo al tipo
     if (tipo != null)
       if (tipo.isEntero()){
-        expr.toCode(pr,prf,proxI);
         Global.out.println("li $v0, 1");
         Global.out.println("move $a0, " + reg);
         Global.out.println("syscall");
       } else if  (tipo.isFloat()){
-        expr.toCode(pr,prf,proxI);
         Global.out.println("li $v0, 2");
         Global.out.println("mov.s $f12, " + regF);
         Global.out.println("syscall");
@@ -56,23 +54,6 @@ class ASTInstImprime extends ASTInst {
         Global.out.println("move $a0, $v0");
         Global.out.println("li $v0, 4\nsyscall");
       } else if  (tipo.isString()){
-        //Supongo que en pr me viene la direccion del string que tengo que imprimir.
-        /*//Tamano a reservar en memoria para guardar el string para imprimirlo.
-        //el +1 es para que sepa el final de string.
-        int tam = ((ASTExprStringCtte)expr).getString().length()-1;
-        String reg1 = Registros.T[(pr+1) % Registros.maxT];
-        //Reservo espacio para el String.
-        Global.out.println("li $a0 , "+tam);
-        Global.out.println("li $v0, 9\nsyscall");
-        //Copiamos en pr la direccion del espacio que me asignaron para ir guardando
-        //letra por letra en esa direccion.
-        Global.out.println("move "+reg+" $v0");
-        for (int i =1;i < ((ASTExprStringCtte) expr).getString().toCharArray().length - 1;i++){
-          Global.out.println("li "+reg1+" , "+((int) ((ASTExprStringCtte)expr).getString().toCharArray()[i]));
-          Global.out.println("sb "+reg1+" "+(i-1)+"("+reg+")");
-        }
-        */
-        //Copiamos la direccion del string que acabamos de guardar en $a0 y mandamos a imprimir.
         Global.out.println("move $a0, "+reg);
         Global.out.println("li $v0, 4\nsyscall");
       }
@@ -162,8 +143,6 @@ class ASTInstAsigExp extends ASTInstAsig {
   boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     String reg = Registros.T[pr % Registros.maxT];
     String reg2 = Registros.T[(pr + 1) % Registros.maxT];
-//    exp.toCode(pr,prf,proxI);
-//    lvalue.toCode(pr,prf,proxI);
     //Depende de si es tipo básico, o tipo compuesto.
     if (lvalue.getTip().isArray() || lvalue.getTip().isStruct()){
       // Si es un literal de arreglo
@@ -336,7 +315,6 @@ class ASTInstBloque extends ASTInst{
     boolean us = false;
     String proxI2 = "";
     int y = inst.size();
-//    System.out.println("jumpBreak "+jumpBreak);
     for (int  i = 0; i < y -1; i++){
       proxI2 = Global.nuevaEtiqueta();
       ASTInst ins = (ASTInst) inst.get(i);
@@ -556,8 +534,6 @@ class ASTInstWhile extends ASTInst{
     boolean us = false;
     Global.out.println("j "+NE);
     Global.out.println(NE2+":");
-//    System.out.println("proxI "+proxI);
-//    System.out.println("jumpBreak "+jumpBreak );
     if (bloque.toCode(pr,prf, NE,proxI))
       us = true;
     Global.out.println(NE+":");
