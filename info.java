@@ -1,9 +1,12 @@
 public class info {
   public int desp;
   public ASTTipo obj;
-  boolean onreg = false;
-  boolean onmain = false;
-  boolean onparam = false;
+  boolean onreg     = false;
+  boolean onmain    = false;
+  boolean onparam   = false;
+  boolean havedis   = false;
+  boolean discri    = false;
+  ASTExpr disValido = null;
   int numParam = 0;
   String tipoParametro = "valor";
 
@@ -23,7 +26,9 @@ public class info {
   }
 
   public String toString(){
-    return obj+" "+desp;
+    String ret = "obj: "+obj+" desp: "+desp;
+    ret = ret+"\nhd "+havedis+"\ndisValido "+disValido+"\ndiscri "+discri;
+    return ret;
   }
 
   boolean onreg(){

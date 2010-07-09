@@ -414,7 +414,9 @@ st ::= lista_estructura:v1 COMA union:v2 RLLAVE
                     if (!v1.checkAll()) 
                       throw new UnionException(parser.scanner.linea(), parser.scanner.columna());
                     //Se agrega el campo discriminante
-                    v1.agregar(new info(v2.tipo), v2.discriminante);
+                    info inf = new info(v2.tipo);
+                    inf.discri = true;
+                    v1.agregar(inf, v2.discriminante);
                     v1.setCamposUnion();
 
                   :}
@@ -455,15 +457,23 @@ union ::= UNION tipo:v1 ID:v2 LLLAVE lista_union:v3 RLLAVE
                throw new SwitchException(parser.scanner.linea(), parser.scanner.columna());
              
              RESULT = v3; 
+//             System.out.println("union458expresion");
+//             System.out.println(v3);
           :}
 ;
 
 lista_union ::= lista_union:v1 expr:v2 DOSPUNTOS LLLAVE lista_estructura:v3 RLLAVE 
     {:if (!v1.agregar(v2, v3.st))
         throw new Exception("Se repiten los id");
+//System.out.println("464expresion");
+      v3.agregarVar(v2);
       RESULT = v1;
     :}
-| expr:v1 DOSPUNTOS LLLAVE lista_estructura:v2 RLLAVE {: RESULT = new structUnion(v1, v2.st, v2.tam); :}
+| expr:v1 DOSPUNTOS LLLAVE lista_estructura:v2 RLLAVE 
+    {: 
+    RESULT = new structUnion(v1, v2.st, v2.tam); 
+    v2.agregarVar(v1);
+    :}
 ;
 
 tipobasicos ::= ENTERO {: RESULT = new ASTTipoInt(); :}
@@ -892,6 +902,7 @@ expr ::= expr:v1 PLUS expr:v3
                                   RESULT = new ASTExprAritBin("+", v1, v3);
                                else if (v1.getTip().isString()){
                                   String msj = Global.nuevoMensaje(); 
+                                  //tratamos de castear a astexprstring algo que es astexprid cuando declaro d = b+c;
                                   String msj1 =(String) parser.mensajes.get(((ASTExprString)v1).etiqueta); 
                                   String msj2 =(String) parser.mensajes.get(((ASTExprString)v3).etiqueta); 
                                   parser.mensajes.put(msj, msj1 + msj2);

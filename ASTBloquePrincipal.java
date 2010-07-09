@@ -47,6 +47,8 @@ class ASTBloquePrincipal {
     Global.out.println(".data");
     Global.out.println("str1: .asciiz \"Error en los indices de los arreglos.\"");
     Global.out.println("readBool: .asciiz \"Exception:Introduzca un booleano valido 0 o 1.\"");
+    Global.out.println("str2: .asciiz\"Exception:No estas en el discriminante correcto.\"");
+    Global.out.println("str3: .asciiz\"Exception:Valor invalido para el discriminante.\"");
     for ( Enumeration a = mensajes.keys(); a.hasMoreElements() ;){
       String msj = (String) a.nextElement();
       Global.out.println(msj + ": .asciiz "+mensajes.get(msj));
@@ -65,8 +67,17 @@ class ASTBloquePrincipal {
     main.mergeAST(inicializacionesGlobales);
     main.toCode(pr, prf, "fin","fin");
     Global.out.println("fin: li $v0 10\nsyscall");
+    Global.out.println("disc:");
+    Global.out.println("la $a0, str2");
+    Global.out.println("li $v0, 4");
+    Global.out.println("syscall");
+    Global.out.println("j fin");
     Global.out.println("error:");
-    Global.out.println("la $a0, str1");    
+    Global.out.println("la $a0, str1");
+    Global.out.println("li $v0, 4");
+    Global.out.println("syscall");
+    Global.out.println("invdisc:");
+    Global.out.println("la $a0, str3");
     Global.out.println("li $v0, 4");         
     Global.out.println("syscall");
     Global.out.println("j fin");

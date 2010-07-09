@@ -510,10 +510,16 @@ class ASTExprStringBin extends ASTExprString{
   /*Supongo que en pr viene la direccion del primer string y en pr+1 la dir del 
    * segundo string 
    */
-  boolean toCode(int pr, int prf, String a){ 
+  boolean toCode(int pr, int prf, String a){
+    izq.toCode(pr,prf,a);
+    der.toCode(pr+1,prf,a);
     String NE = Global.nuevaEtiqueta();
     String NE2 = Global.nuevaEtiqueta();
     String NE3 = Global.nuevaEtiqueta();
+    String NE4 = Global.nuevaEtiqueta();
+    String NE5 = Global.nuevaEtiqueta();
+    String NE6 = Global.nuevaEtiqueta();
+    String NE7 = Global.nuevaEtiqueta();
     //Registros donde esta el apuntador al primer string
     String reg = Registros.T[pr % Registros.maxT];
     //Registros donde esta el apuntador al segundo string
@@ -525,35 +531,58 @@ class ASTExprStringBin extends ASTExprString{
     //Registros donde se llevara el tamano de lo dos string.
     String creg = Registros.T[(pr+4) % Registros.maxT];
 
-/*
     Global.out.println("li "+creg+", -1");
-    Global.out.println("mv "+dreg+" , "+reg);
+    Global.out.println("move "+dreg+" , "+reg);
     Global.out.println("add "+dreg+" , "+dreg+" , -1");
     Global.out.println(NE+":");
     Global.out.println("add "+dreg+" , "+dreg+" , 1");
     Global.out.println("add "+creg+" , "+creg+" , 1");
-    Global.out.println("lb "+sreg+"+ , 0("+dreg+")");
+    Global.out.println("lb "+sreg+" , 0("+dreg+")");
     Global.out.println("beqz "+sreg+" "+NE2);
     Global.out.println("j "+NE);
     Global.out.println(NE2+":");
-    Global.out.println("mv "+dreg+" ,"+preg);
+    Global.out.println("move "+dreg+" ,"+preg);
     Global.out.println("add "+dreg+" , "+dreg+" , -1");
     Global.out.println("add "+creg+" , "+creg+" , -1");
     Global.out.println(NE3+":");
     Global.out.println("add "+dreg+" , "+dreg+" , 1");
     Global.out.println("add "+creg+" , "+creg+" , 1");
-    Global.out.println("lb "+sreg"+ , 0("+dreg+")");
+    Global.out.println("lb "+sreg+" , 0("+dreg+")");
     Global.out.println("beqz "+sreg+" "+NE4);
     Global.out.println("j "+NE3);
     Global.out.println(NE4+":");
+    Global.out.println("add "+creg+" , "+creg+" , 1");
+    Global.out.println("move $a0 "+creg);
     Global.out.println("li $v0 9\nsyscall");
-    Global.out.println("
-*/
+    //aqui ne creg estoy guardando el nuevo espacio de memoria.
+    Global.out.println("move "+creg+" $v0");
+    Global.out.println("move "+dreg+" $v0");
+    //aqui empiezo a usar a reg como el dommy para recorrer los string.
+//    Global.out.println("li "+reg+" -1");
+    Global.out.println("add "+reg+" , "+reg+" , -1");
+    Global.out.println("add "+preg+" , "+preg+" , -1");
+    Global.out.println(NE5+":");
+    Global.out.println("add "+reg+" , "+reg+" , 1");
+    Global.out.println("add "+creg+" , "+creg+" , 1");
+//    Global.out.println("add "+reg+" , "+reg+" ,"+" 1");
+    Global.out.println("lb "+sreg+" , 0("+reg+")");
+    Global.out.println("beqz "+sreg+" "+NE6);
+    Global.out.println("sb "+sreg+" 0("+creg+")");
+    Global.out.println("j "+NE5);
+    Global.out.println(NE6+":");
+    Global.out.println("add "+creg+" , "+creg+" , 1");
+    Global.out.println("add "+preg+" , "+preg+" , 1");
+    Global.out.println("lb "+sreg+" , 0("+preg+")");
+    Global.out.println("beqz "+sreg+" "+NE7);
+    Global.out.println("sb "+sreg+" 0("+creg+")");
+    Global.out.println("j "+NE6);
+    Global.out.println(NE7+":");
+    Global.out.println("move "+reg+" "+dreg);
     return false;
   }
 }
 
-class ASTExprStringCtte extends ASTExprString { 
+class ASTExprStringCtte extends ASTExprString {
   String ctte; 
   ASTTipo tipo;
   //@ invariant tipo!=null;
@@ -756,6 +785,10 @@ class ASTExprArrayElem extends ASTExprLValue {
     return tipo;
   }
 
+  ASTTipo getTipI(){
+    return lvalue.getTip();
+  }
+
   info getInfo(){
     return inf;
   }
@@ -821,6 +854,7 @@ abstract class ASTExprLValue extends ASTExpr{
   abstract String getId();
   abstract ASTTipo getTip();
   abstract info getInfo();
+  abstract ASTTipo getTipI();
 
   //alculas el rvalue de los lvalue
   void getRValue(int pr, int prf, ASTTipo t){
@@ -870,6 +904,10 @@ class ASTExprId extends ASTExprLValue {
     return tipo;
   }
 
+  ASTTipo getTipI(){
+    return tipo;
+  }
+
   info getInfo(){
     return inf;
   }
@@ -884,6 +922,7 @@ class ASTExprId extends ASTExprLValue {
   }
 
   void cargaDireccion(int pr, int prf, String a){
+//    System.out.println("cadfafa");
     inf.cargaDireccion(pr,prf);
   }
 
@@ -948,7 +987,9 @@ class ASTExprStructElem extends ASTExprLValue {
     this.inf = info1;
   }
 
+
   public /*@ non_null @*/ String toString(){
+//    System.out.println("p");
     return  lvalue + "." + id;
   }
 
@@ -958,6 +999,10 @@ class ASTExprStructElem extends ASTExprLValue {
 
   ASTTipo getTip(){
     return tipo;
+  }
+
+  ASTTipo getTipI(){
+    return lvalue.getTip();
   }
 
   String getId(){
@@ -973,12 +1018,24 @@ class ASTExprStructElem extends ASTExprLValue {
     lvalue.cargaDireccion(pr,prf, a);
     String reg = Registros.T[pr % Registros.maxT];    
     String reg2 = Registros.T[(pr + 1) % Registros.maxT];    
-    String reg3 = Registros.T[(pr + 1) % Registros.maxT];    
+    String reg3 = Registros.T[(pr + 2) % Registros.maxT];    
     Global.out.println(Registros.salvar(pr+1));
     Global.out.println(Registros.salvar(pr+2));
 
     //Chequeo dinamico del union
- 
+    if (inf.havedis){
+System.out.println("paso x aqui");
+      int desp = ((ASTTipoStruct) lvalue.getTip()).getDis();
+      if(inf.disValido !=null)
+        inf.disValido.toCode(pr+1,pr,a);
+      else
+System.out.println("Error el discriminante del info es null");
+      
+      Global.out.println("add "+reg3+" , "+reg+" , -"+desp);
+      Global.out.println("lw "+reg3+" 0("+reg3+")");
+      Global.out.println("bne "+reg3+" "+reg2+" disc");
+    }
+
     //Cargo el desplazamiento del atributo
     Global.out.println("li "+ reg2 + ",-" + inf.desp);
 
@@ -1005,11 +1062,9 @@ class ASTExprStructElem extends ASTExprLValue {
     Global.out.println(store + siguiente + ", ("+ actual + ")" );
   }
 
-
   boolean toCode(int pr, int prf, String a){
     cargaDireccion(pr,prf, a);
     getRValue(pr, prf, tipo);
-
     return false;
   }
 }
@@ -1024,6 +1079,10 @@ class ASTExprFun extends ASTExprLValue {
   }
 
   ASTTipo getTip(){
+    return tipo;
+  }
+
+  ASTTipo getTipI(){
     return tipo;
   }
 

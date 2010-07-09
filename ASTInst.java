@@ -162,7 +162,8 @@ class ASTInstAsigExp extends ASTInstAsig {
   boolean toCode(int pr, int prf, String proxI, String jumpBreak){
     String reg = Registros.T[pr % Registros.maxT];
     String reg2 = Registros.T[(pr + 1) % Registros.maxT];
-
+//    exp.toCode(pr,prf,proxI);
+//    lvalue.toCode(pr,prf,proxI);
     //Depende de si es tipo básico, o tipo compuesto.
     if (lvalue.getTip().isArray() || lvalue.getTip().isStruct()){
       // Si es un literal de arreglo
@@ -171,7 +172,6 @@ class ASTInstAsigExp extends ASTInstAsig {
         for(int i = 0; ((ASTTipoArray) lvalue.getTip()).getTam() > i; i++){
           ASTExprArrayElem elem = new ASTExprArrayElem(lvalue, ((ASTTipoArray)lvalue.getTip()).subclass, new ASTExprAritCtteInt(i));
           elem.cargaDireccion(pr,prf, proxI);
-
           Registros.salvar(pr + 1);
           Registros.salvarF(prf + 1);
           ASTInstAsigExp e = new ASTInstAsigExp(elem,(ASTExpr) ((ASTExprArrayCtte) exp).values.get(i));
@@ -204,6 +204,20 @@ class ASTInstAsigExp extends ASTInstAsig {
         //Limpio todo el tamaño del union 
       //}
     } else {
+//      exp.toCode(pr,prf,proxI);
+//      System.out.println(exp.());
+      if (lvalue.getInfo().discri){
+        String NE   = Global.nuevaEtiqueta();
+        exp.toCode(pr+1,prf+1,proxI);
+        Enumeration a = ((ASTTipoStruct) lvalue.getTipI()).key();
+        for (Enumeration e = a ; e.hasMoreElements();){
+          ASTExpr s = ((ASTExpr) e.nextElement());
+          s.toCode(pr,prf,proxI);
+          Global.out.println("beq "+reg+" "+reg2+" "+NE);
+        }
+        Global.out.println("j invdisc");
+        Global.out.println(NE+":");
+      }
       lvalue.cargaDireccion(pr,prf, proxI);
       Registros.salvar(pr + 1);
       Registros.salvarF(prf + 1);
@@ -211,8 +225,8 @@ class ASTInstAsigExp extends ASTInstAsig {
       lvalue.modifica(pr, prf);
       Registros.restaurar(pr + 1);
       Registros.restaurarF(prf + 1);
+      
     }
-
     return false;
   }
 

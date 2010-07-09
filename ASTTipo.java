@@ -246,6 +246,15 @@ class ASTTipoStruct extends ASTTipo{
     tam += inf.obj.tam;
   }
 
+  void agregarVar(ASTExpr a){
+//System.out.println("paso x agregarVar250ASTTipo "+this);
+    for (Enumeration e = st.elements() ; e.hasMoreElements();){
+      info inf = (info) e.nextElement();
+      inf.disValido = a;
+      inf.havedis = true;
+    }
+  }
+
   //Sirve para asignarle el desplazamiento a los elementos del union 
   void setCamposUnion(){
     info y = null;
@@ -321,6 +330,18 @@ class ASTTipoStruct extends ASTTipo{
     return this.equals(t);
   }
 
+  int getDis(){
+    return ((info) st.get(union.discriminante)).desp;
+  }
+
+  Enumeration key(){
+    return union.moreST.keys();
+  }
+
+/*  ASTExpr verifDiscri(){
+    
+  }
+*/
 }
 
 
