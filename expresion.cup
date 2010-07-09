@@ -156,6 +156,7 @@ non terminal principal;
 non terminal promesas;
 non terminal seleccion;
 non terminal LinkedList elseif;
+non terminal LinkedList elseif1;
 non terminal repeticion;
 non terminal rep1;
 non terminal rep2;
@@ -831,7 +832,7 @@ seleccion1 ::= IF expr:v1 {:parser.bloque = new ASTInstBloque(parser.bloque);
                            parser.tablaVar = new SymTable(parser.tablaVar);
                          :} 
                           bloqueR 
-                          elseif:v3 
+                          elseif1:v3 
 {:if (!v1.getTip().isBool())
       throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
     parser.bloque.padre.add(new ASTInstIf(parser.bloque,v1,v3));
@@ -850,15 +851,26 @@ seleccion ::= IF expr:v1
 
 
 
-elseif ::= ELSEIF expr:v1 bloque elseif:v3 {:if (!v1.getTip().isBool())
-                                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
-                                                  v3.addFirst(new ASTInstElseIf(v1,parser.bloque)); 
-                                                  RESULT = v3; 
-                                                  parser.bloque = parser.bloque.padre; :}
+elseif ::= ELSEIF expr:v1 bloque elseif:v3 {: if (!v1.getTip().isBool())
+                                                throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                              v3.addFirst(new ASTInstElseIf(v1,parser.bloque)); 
+                                              RESULT = v3; 
+                                              parser.bloque = parser.bloque.padre; :}
 | ELSE bloque {: RESULT = new LinkedList(); RESULT.add(new ASTInstElse(parser.bloque)); parser.bloque = parser.bloque.padre; :}
 | {:RESULT = new LinkedList(); :}
 ;
 
+elseif1 ::= ELSEIF expr:v1 
+    {:parser.bloque = new ASTInstBloque(parser.bloque); 
+      parser.tablaVar = new SymTable(parser.tablaVar);
+    :} bloqueR elseif1:v3 {:if (!v1.getTip().isBool())
+                                                  throw new UsoIndebidoException(parser.scanner.linea(),parser.scanner.columna());
+                                               v3.addFirst(new ASTInstElseIf(v1,parser.bloque)); 
+                                               RESULT = v3; 
+                                               parser.bloque = parser.bloque.padre; :}
+| ELSE bloqueR {: RESULT = new LinkedList(); RESULT.add(new ASTInstElse(parser.bloque)); parser.bloque = parser.bloque.padre; :}
+| {:RESULT = new LinkedList(); :}
+;
 // ******************************************* ASIGNACIONES **********************************************************
 
 asignacion ::= lvalue:v1 IGUAL expr:v2 {:

@@ -247,7 +247,6 @@ class ASTTipoStruct extends ASTTipo{
   }
 
   void agregarVar(ASTExpr a){
-//System.out.println("paso x agregarVar250ASTTipo "+this);
     for (Enumeration e = st.elements() ; e.hasMoreElements();){
       info inf = (info) e.nextElement();
       inf.disValido = a;
@@ -334,14 +333,10 @@ class ASTTipoStruct extends ASTTipo{
     return ((info) st.get(union.discriminante)).desp;
   }
 
-  Enumeration key(){
-    return union.moreST.keys();
+  Hashtable key(){
+    return union.moreST;
   }
 
-/*  ASTExpr verifDiscri(){
-    
-  }
-*/
 }
 
 
@@ -415,10 +410,6 @@ class structUnion {
 
   //@ non_null
   public String toString(){
-       //String key, def="";    
-      //for( Enumeration e = moreST.keys(); e.hasMoreElements(); def += ""+ key+":" + moreST.get(key)+"\n") 
-        //key =  e.nextElement();
-       
     return moreST.toString();
   }
 

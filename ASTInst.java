@@ -204,23 +204,35 @@ class ASTInstAsigExp extends ASTInstAsig {
         //Limpio todo el tamaño del union 
       //}
     } else {
-//      exp.toCode(pr,prf,proxI);
-//      System.out.println(exp.());
+      Registros.salvar(pr + 1);
+      Registros.salvarF(prf + 1);
+      String reg3 = Registros.T[(pr + 2) % Registros.maxT];
       if (lvalue.getInfo().discri){
+        Registros.salvar(pr + 2);
+        Registros.salvarF(prf + 2);
         String NE   = Global.nuevaEtiqueta();
         exp.toCode(pr+1,prf+1,proxI);
-        Enumeration a = ((ASTTipoStruct) lvalue.getTipI()).key();
-        for (Enumeration e = a ; e.hasMoreElements();){
+        Hashtable a = ((ASTTipoStruct) lvalue.getTipI()).key();
+        for (Enumeration e = a.keys() ; e.hasMoreElements();){
           ASTExpr s = ((ASTExpr) e.nextElement());
-          s.toCode(pr,prf,proxI);
-          Global.out.println("beq "+reg+" "+reg2+" "+NE);
+          s.toCode(pr+2,prf+2,proxI);
+          Global.out.println("beq "+reg2+" "+reg3+" "+NE);
         }
         Global.out.println("j invdisc");
         Global.out.println(NE+":");
+        lvalue.cargaDireccion(pr,prf, proxI);
+        for (Enumeration e = a.keys() ; e.hasMoreElements();){
+          ASTExpr s = ((ASTExpr) e.nextElement());
+          s.toCode(pr+2,prf+2,proxI);
+          for (Enumeration w = ((Hashtable) a.get(s)).keys() ; w.hasMoreElements();){
+            String elem= (String) w.nextElement();
+            Global.out.println("add "+reg3+" , "+reg+" , -"+((info) ((Hashtable) a.get(s)).get(elem)).desp);
+            Global.out.println("sw $0 0("+reg3+")");
+          }
+        }
+
       }
       lvalue.cargaDireccion(pr,prf, proxI);
-      Registros.salvar(pr + 1);
-      Registros.salvarF(prf + 1);
       exp.toCode(pr + 1, prf+1, proxI);
       lvalue.modifica(pr, prf);
       Registros.restaurar(pr + 1);
@@ -415,7 +427,7 @@ class ASTInstIf extends ASTInst{
       Global.out.println("beqz "+y+" , "+proxI);
       us = cuerpo.toCode(pr,prf, proxI,jumpBreak);
     }
-    return us;
+    return true;
   }
 
   tripleta tam(tripleta tr){

@@ -520,6 +520,7 @@ class ASTExprStringBin extends ASTExprString{
     String NE5 = Global.nuevaEtiqueta();
     String NE6 = Global.nuevaEtiqueta();
     String NE7 = Global.nuevaEtiqueta();
+    String NE8 = Global.nuevaEtiqueta();
     //Registros donde esta el apuntador al primer string
     String reg = Registros.T[pr % Registros.maxT];
     //Registros donde esta el apuntador al segundo string
@@ -551,6 +552,8 @@ class ASTExprStringBin extends ASTExprString{
     Global.out.println("beqz "+sreg+" "+NE4);
     Global.out.println("j "+NE3);
     Global.out.println(NE4+":");
+//suma uno al creg (que es el contador del tamano de los arreglos para 
+//el caracter nulo al final del string.
     Global.out.println("add "+creg+" , "+creg+" , 1");
     Global.out.println("move $a0 "+creg);
     Global.out.println("li $v0 9\nsyscall");
@@ -558,9 +561,8 @@ class ASTExprStringBin extends ASTExprString{
     Global.out.println("move "+creg+" $v0");
     Global.out.println("move "+dreg+" $v0");
     //aqui empiezo a usar a reg como el dommy para recorrer los string.
-//    Global.out.println("li "+reg+" -1");
     Global.out.println("add "+reg+" , "+reg+" , -1");
-    Global.out.println("add "+preg+" , "+preg+" , -1");
+    Global.out.println("add "+creg+" , "+creg+" , -1");
     Global.out.println(NE5+":");
     Global.out.println("add "+reg+" , "+reg+" , 1");
     Global.out.println("add "+creg+" , "+creg+" , 1");
@@ -570,13 +572,16 @@ class ASTExprStringBin extends ASTExprString{
     Global.out.println("sb "+sreg+" 0("+creg+")");
     Global.out.println("j "+NE5);
     Global.out.println(NE6+":");
+    Global.out.println("add "+preg+" , "+preg+" , -1");
+    Global.out.println("add "+creg+" , "+creg+" , -1");
+    Global.out.println(NE7+":");
     Global.out.println("add "+creg+" , "+creg+" , 1");
     Global.out.println("add "+preg+" , "+preg+" , 1");
     Global.out.println("lb "+sreg+" , 0("+preg+")");
-    Global.out.println("beqz "+sreg+" "+NE7);
+    Global.out.println("beqz "+sreg+" "+NE8);
     Global.out.println("sb "+sreg+" 0("+creg+")");
-    Global.out.println("j "+NE6);
-    Global.out.println(NE7+":");
+    Global.out.println("j "+NE7);
+    Global.out.println(NE8+":");
     Global.out.println("move "+reg+" "+dreg);
     return false;
   }
@@ -1024,7 +1029,6 @@ class ASTExprStructElem extends ASTExprLValue {
 
     //Chequeo dinamico del union
     if (inf.havedis){
-System.out.println("paso x aqui");
       int desp = ((ASTTipoStruct) lvalue.getTip()).getDis();
       if(inf.disValido !=null)
         inf.disValido.toCode(pr+1,pr,a);
@@ -1035,7 +1039,6 @@ System.out.println("Error el discriminante del info es null");
       Global.out.println("lw "+reg3+" 0("+reg3+")");
       Global.out.println("bne "+reg3+" "+reg2+" disc");
     }
-
     //Cargo el desplazamiento del atributo
     Global.out.println("li "+ reg2 + ",-" + inf.desp);
 
