@@ -1,0 +1,23 @@
+Fetoy Compiler
+
+Fetoy it is a very basic language, with syntax similar to C. Its written by two students as a project for one of the hardest concentration(programming language) in the Simon Bolivar University in 2 trimesters. It was created by us so that we could learn the basic functions of a compiler. 
+
+There is a project definition, I just need to find it jeje. 
+
+In a brief summary, its an imperative language, that handles all the basic types, typedefs, arrays, hashs and structs. 
+It handles the basic instructions such as multiple assignments, conditionals, iterations.
+It handles functions, and you can pass variables by value and by reference.
+It doesn't handled pointers or a heap, so there is no dynamic memory allocation. 
+
+The development was performed at three(3) parts:
+
+1. Lexicografic parsing.
+2. Sintatic parsing and feeding on the Table of Symbols.
+3. Construction on the abstract tree, parsing of context.
+4. Generate code in SPIN programming language.
+ 
+This is one of the courses I took as student in the Simon Bolivar University, in Caracas, Venezuela.
+
+This project was created by the Simon Bolívar University(Computer and Information Tecnology department), specifically by professor Jesus Ravelo.
+CI4721 / CI4722 – Programming Language II and III
+January-July 2010
